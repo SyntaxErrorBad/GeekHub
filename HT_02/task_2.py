@@ -42,4 +42,3 @@ def challenge_7():
     my_list = [1, 'два', 3, 'чотири', 5]
     print("Об'єднаний рядок:", ''.join(map(str, my_list)))
 
-challenge_3()
