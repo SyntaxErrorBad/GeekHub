@@ -7,7 +7,6 @@ new_list = []
 
 for element in test_list:
     if len(element) != 0:
-        if len(element[0]) != 0:
-            new_list.append(element)
+        new_list.append(element)
 
 print(new_list)
