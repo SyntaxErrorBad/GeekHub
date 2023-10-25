@@ -11,4 +11,4 @@ except SpecificError as specific_exception:
         raise CustomError("Custom error occurred.") from specific_exception
     except CustomError as custom_exception:
         print("Custom Error Message:", custom_exception)
-        print("Original Exception Message:", custom_exception.__cause__)
+        print("Original Exception Message:", custom_exception)
