@@ -38,4 +38,4 @@ def calculators(item):
         return f"Wrong data, Error:  {e}"
 
 
-print(calculators(input("Вираз: ")))
+print(calculators(input("Вираз через пробіл: ")))
