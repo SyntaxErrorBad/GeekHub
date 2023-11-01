@@ -11,14 +11,16 @@ def is_prime(num):
 
 
 def prime_list(start, end):
+    def prime_list(start, end):
     try:
+        start ,end = int(start), int(end)
         primes = []
         for num in range(start, end + 1):
             if is_prime(num):
                 primes.append(num)
         return primes
     except Exception as e:
-        return e
+        return "Неправильно введені дані, код помилки: {}".format(e)
 
 
-print(prime_list(int(input("Start: ")), int(input("End: "))))
+print(prime_list(input("Start: "), input("End: ")))
