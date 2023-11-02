@@ -15,12 +15,14 @@ def check_len(length,lst):
         return False
 
 
-def working_with_list(lst, shift):
+def working_with_list(lst, shift,m_shift = False):
+    if m_shift:
+        shift = shift%len(lst)
     if check_len(shift,lst):
         shifted_list = lst[-shift:] + lst[:-shift]
         return shifted_list
     else:
-        return "Shift занадто великий"
+        return "Зсув занадто великий"
 
 
-print(working_with_list([1, 2, 3, 4, 5], -2))
+print(working_with_list([1, 2, 3, 4, 5], 11,m_shift=True))
