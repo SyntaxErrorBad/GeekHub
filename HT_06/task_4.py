@@ -11,7 +11,6 @@ def is_prime(num):
 
 
 def prime_list(start, end):
-    def prime_list(start, end):
     try:
         start ,end = int(start), int(end)
         primes = []
