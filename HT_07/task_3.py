@@ -25,28 +25,28 @@ def check_valid(username, password):
         raise ValidationException("Password should be at geekhub!!!!!!!!")
     
 
-user_password_pairs = [
-    ("user1", "password1geekhub"),
-    ("user2", "password2"),
-    ("user3", "pass"),
-    ("user4", "password4geekhub"),
-    ("user5"*50, "120000"),
-]
+users = [
+        {"username": "user1", "password": "password1"},
+        {"username": "user2", "password": "password2"},
+        {"username": "user3", "password": "password3"},
+        {"username": "user4", "password": "password4"},
+        {"username": "user5", "password": "password5"},
+    ]
 
-for username, password in user_password_pairs:
+for user in users:
     try:
-        check_valid(username, password)
+        check_valid(user["username"], user["password"])
         print(f"""
-            Username: {username}
-            Password: {password}
+            Username: {user["username"]}
+            Password: {user["password"]}
             Status: OK
             --------------------
             """)
 
     except ValidationException as e:
         print(f"""
-            Username: {username}
-            Password: {password}
+            Username: {user["username"]}
+            Password: {user["password"]}
             Status: {e}
             --------------------
             """)
