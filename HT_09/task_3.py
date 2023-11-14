@@ -111,6 +111,10 @@ def update_balance(user_data, amount, action_name):
     with open("Task3_files\\balance\\"+user_data[0]+"_balance.txt", 'r') as file:
         past_amount = file.readline()
 
+    if amount.startswith("-"):
+        print("Нажаль число негативне")
+        control(user_data)
+
     with open("Task3_files\\balance\\"+user_data[0]+"_balance.txt", 'w') as file:
         if action_name == "поповнити":
             file.write(str(int(past_amount)+int(amount)))
@@ -126,14 +130,14 @@ def update_balance(user_data, amount, action_name):
     
 
 def control(user_data):
-    abillity = input("Введіть що бажаєте(переглянути баланс,поповнити,зняти кошти,вихід): ")
+    abillity = input("Введіть що бажаєте(переглянути баланс,поповнити,зняти кошти,вихід) для того, щоб обрати напишіть те що в дужках: ")
     if abillity == "переглянути баланс":
         check_balance(user_data)
     elif abillity == "поповнити":
-        amount = input("Сума поповнення?: ")
+        amount = input("Сума поповнення?(напишіть в типі позитивне ціле число): ")
         update_balance(user_data, amount, abillity)
     elif abillity == "зняти кошти":
-        amount = input("Сума зняття: ")
+        amount = input("Сума зняття?(напишіть в типі позитивне ціле число): ")
         update_balance(user_data, amount, abillity)
     elif abillity == "вихід":
         exit()
@@ -158,8 +162,8 @@ def login(password=1):
 
 
 def start():
-    reg_quest = input("Бажаєте зареєструватись?: ")
-    if reg_quest == "Yes":
+    reg_quest = input('Бажаєте зареєструватись?(Якщо Так, то напишіть "Так",якщо Ні, то напишіть "Ні"): ')
+    if reg_quest == "Так":
         user_data = (input("Через пробіл напишіть ім'я та пароль: ")).split(" ")
         if check_valid(user_data):
             print("Нажаль користувач існує")
@@ -169,7 +173,7 @@ def start():
             create_files(take_users("users.csv"))
             print(f"Вітаю ви зайшли під ім'ям: {user_data[0]}")
             control(user_data)
-    elif reg_quest == "No":
+    elif reg_quest == "Ні":
         print("Зайдіть до свого аккаунта!")
         login()
 
@@ -178,7 +182,6 @@ def main():
     ensure_file_exists("users.csv")
     create_files(take_users("users.csv"))
     start()
-    print(take_users("users.csv"))
 
 
 if __name__ == "__main__":
