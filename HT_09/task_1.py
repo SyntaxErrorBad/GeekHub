@@ -19,12 +19,6 @@
 #       Yellow     Red
 #       Red        Green
 
-import time
-
-time_delay = 5
-cars_lights = ["Red", "Yellow", "Green"]
-human_lights = ["Red", "Green"]
-
 
 def traffic_light_emulator():
     car_colors = ["Red", "Yellow", "Green"]
