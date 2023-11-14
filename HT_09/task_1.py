@@ -26,21 +26,24 @@ cars_lights = ["Red", "Yellow", "Green"]
 human_lights = ["Red", "Green"]
 
 
-def traffic_lights(real_time=False, infinity=False):
-    i = 0
-    while i < 2:
-        for _ in range(10):
-            if _ < time_delay-1:
-                print("{}     {}".format(cars_lights[0], human_lights[-1]))
-            elif _ == time_delay or _ == time_delay-1:
-                print("{}    {}".format(cars_lights[1], human_lights[0]))
-            else:
-                print("{}     {}".format(cars_lights[-1], human_lights[0]))
-            if real_time:
-                time.sleep(1)
-        print("_"*100)
-        if not infinity:
-            i += 1
+def traffic_light_emulator():
+    car_colors = ["Red", "Yellow", "Green"]
+    pedestrian_colors = ["Red", "Green"]
 
+    car_index = 0
+    pedestrian_index = 0
 
-traffic_lights(real_time=True)
+    while True:
+        car_color = car_colors[car_index]
+        pedestrian_color = pedestrian_colors[pedestrian_index]
+        
+        print(f"{car_color:<10} {pedestrian_color:>10}")
+
+        time.sleep(1)
+
+        if car_color == "Green":
+            pedestrian_index = (pedestrian_index + 1) % len(pedestrian_colors)
+
+        car_index = (car_index + 1) % len(car_colors)
+
+traffic_light_emulator()
