@@ -38,88 +38,137 @@ def change_combinations(amount, denominations):
         return combinations
     else:
         return None
+    
+
+def withdraw_money(user):
+    withdraw_cash = int(input("Введіть суму яку бажаєте зняти(наприклад 1350(Без знака -)): "))
+    if withdraw_cash < 0:
+        withdraw_cash = withdraw_cash * -1
+
+    if withdraw_cash <= connectDB.current_balance(user):
+        note = change_combinations(withdraw_cash, connectDB.current_notes())
+        if note is not None:
+            connectDB.update_balance_withdraw(user, withdraw_cash, note)
+            return f"Ви зняли {withdraw_cash} успішно"
+        return f"Вибачте ви не можете зняти цю суму(Не має таких купюр)"
+    return f"Замало коштів спробуйте іншу суму!"
 
 
-def control_panel(user):
-    print(f"Вітаю користувача {user}")
-    control_req = input("Що бажаєте зробити?(перевірити,зняти,положити): ")
-    if control_req == "перевірити":
-        print(f"Ваш баланс {connectDB.check_balance(user)}")
-        control_panel(user)
-    elif control_req == "зняти":
-        withdraw_cash = int(input("Введіть суму яку хочете зняти(наприклад 1350): "))
-        if withdraw_cash <= int(connectDB.check_balance(user)):
-            notes_data = change_combinations(withdraw_cash, connectDB.take_notes())
-            if notes_data is not None:
-                print(f"Ваші купюри: {notes_data}")
-                connectDB.update_balance(user, withdraw_cash, control_req, notes_data)
-                print(f"Ваш баланс {connectDB.check_balance(user)}")
-                control_panel(user)
-            else:
-                print("Нажаль не можу цього зробити, спробуйте іншу суму!")
-                control_panel(user)
+def deposit_money(user):
+    deposit_cash = int(input("Введіть суму яку бажаєте зняти(наприклад 1350(Без знака -)): "))
+    note = change_combinations(deposit_cash, connectDB.current_notes())
+    if note is not None:
+        connectDB.update_balance_deposit(user, deposit_cash, note)
+        return f"Ви положили на депозит {deposit_cash} успішно"
+    return f"Вибачте ви не можете положити цю суму(Ці купюри не приймаються)"
 
-    elif control_req == "положити":
-        withdraw_cash = int(input("Введіть суму яку хочете зняти(наприклад 1350): "))
-        notes_data = change_combinations(withdraw_cash, connectDB.take_notes())
-        if notes_data is not None:
-            print(f"Ваші купюри: {notes_data}")
-            connectDB.update_balance(user, withdraw_cash, control_req, notes_data)
-            print(f"Ваш баланс {connectDB.check_balance(user)}")
-            control_panel(user)
-        else:
-            print("Нажаль не можу цього зробити, спробуйте іншу суму!")
-            control_panel(user)
+
+def taken_denominations():
+    notes = (input("Введіть купюри які бажаєте забрати(номінал через пробіл): ")).split(" ")
+    amount = (input("Введіть купюри які бажаєте забрати(кількість через пробіл): ")).split(" ")
+    notes_data = list(zip(notes, amount))
+    money = connectDB.update_notes(notes_data, False)
+    if money == "Ok":
+        return f"Ви успішно забрали {notes_data}"
     else:
-        print("Неправильна дія!")
-        control_panel(user)
+        return money
 
 
-def control_panel_admin(user):
-    control_req = input("Що бажаєте зробити?(перевірити,додати,забрати): ")
-    if control_req == "перевірити":
-        print(f"На даний момент кількість купюр: {connectDB.take_notes()}")
-        control_panel_admin(user)
-    elif control_req == "додати":
-        notes = (input("Введіть купюри які бажаєте додати(номінал через пробіл): ")).split(" ")
-        amount = (input("Введіть купюри які бажаєте додати(кількість через пробіл): ")).split(" ")
-        notes_data = list(zip(notes, amount))
-        connectDB.update_notes(notes_data, control_req)
-        control_panel_admin(user)
+def give_denominations():
+    notes = (input("Введіть купюри які бажаєте додати(номінал через пробіл): ")).split(" ")
+    amount = (input("Введіть купюри які бажаєте додати(кількість через пробіл): ")).split(" ")
+    notes_data = list(zip(notes, amount))
+    connectDB.update_notes(notes_data, True)
+    return f"Ви успішно додали {notes_data}"
 
-    elif control_req == "забрати":
-        notes = (input("Введіть купюри які бажаєте додати(номінал через пробіл): ")).split(" ")
-        amount = (input("Введіть купюри які бажаєте додати(кількість через пробіл): ")).split(" ")
-        notes_data = list(zip(notes, amount))
-        connectDB.update_notes(notes_data, "зняти")
-        control_panel_admin(user)
 
+def user_panel(user: str):
+    if user == "admin":
+        print("Для повернення в адмін панель (5)")
+    user_action = input("Оберіть дію (зняти кошти(1), положити кошти(2), "
+                        "переглянути рахунок(3),для виходу(4)) напишіть цифру дії яку бажаєте обрати: ")
+    if user_action == "1":
+        print(withdraw_money(user))
+        user_panel(user)
+    elif user_action == "2":
+        print(deposit_money(user))
+        user_panel(user)
+    elif user_action == "3":
+        print(connectDB.current_balance(user))
+        user_panel(user)
+    elif user_action == "4":
+        print(f"Гарного дня {user}")
+        exit()
     else:
-        print("Неправильна дія!")
-        control_panel_admin(user)
+        if user == "admin":
+            if user_action == "5":
+                admin_panel(user)
+        print(f"Невірна команда!")
+        user_panel(user)
 
 
-def start():
+def admin_panel(user: str):
+    admin_action = input("Оберіть дію (забрати купюри(1), положити купюри(2), "
+                         "переглянути купюри(3),для виходу(4),для перевірки рахунку "
+                         "звичайного користувача(5)) напишіть цифру дії яку бажаєте обрати: ")
+    if admin_action == "1":
+        print(taken_denominations())
+        admin_panel(user)
+    elif admin_action == "2":
+        print(give_denominations())
+        admin_panel(user)
+    elif admin_action == "3":
+        print(connectDB.current_notes())
+        admin_panel(user)
+    elif admin_action == "4":
+        print(f"Гарного дня {user}")
+        exit()
+    elif admin_action == "5":
+        print(f"Ви переходите до аккаунта звичайного юзера {user}")
+        user_panel(user)
+    else:
+        print(f"Невірна команда!")
+        admin_panel(user)
+
+
+def register_user():
     money = [10, 20, 50, 100, 200, 500, 1000]
-    register_quest = input("Бажаєте зареєструватись?(Так,Ні):")
-    if register_quest == "Так":
-        login, password = (input("Введіть логін та пароль(через пробіл): ")).split(" ")
-        connectDB.add_user(login, password, random.choice(money))
-        control_panel(login)
-    elif register_quest == "Ні":
-        login, password = (input("Введіть логін та пароль для перевірки(через пробіл): ")).split(" ")
-        in_db, user, root = connectDB.login_valid_user(login, password)
-        if in_db:
-            if root:
-                control_panel_admin(user)
+    reg_quest = input("Бажаєте зареєструватись?(Так(1),Ні(2)): ")
+    if reg_quest == "1":
+        user = (input("Введіть логін та пароль через пробіл: ")).split(" ")
+        print(connectDB.register_user(user, random.choice(money)))
+        user_text, user_in_db, admin = connectDB.check_user(user)
+        if user_in_db:
+            print(user_text)
+            if admin:
+                admin_panel(user[0])
             else:
-                control_panel(user)
+                user_panel(user[0])
         else:
-            print("Користувача не існує")
+            print(user_text)
+            register_user()
+
+    elif reg_quest == "2":
+        user = (input("Введіть логін та пароль через пробіл: ")).split(" ")
+        user_text, user_in_db, admin = connectDB.check_user(user)
+        if user_in_db:
+            print(user_text)
+            if admin:
+                admin_panel(user[0])
+            else:
+                user_panel(user[0])
+        else:
+            print(user_text)
+            register_user()
 
     else:
-        print("Введено не коректне значення!")
-        start()
+        print("Неправильно обрана дія!")
+        register_user()
 
 
-start()
+def main():
+    register_user()
+
+
+if __name__ == "__main__":
+    main()
