@@ -35,7 +35,6 @@ def change_combinations(amount, denominations,deposit):
             (1000, 1000000)
         ]
     denominations = denominations[::-1]
-    print(denominations)
     combinations = []
 
     for denomination, quantity in denominations:
