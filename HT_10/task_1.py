@@ -137,19 +137,18 @@ def user_panel(user):
             if deposit_cash < 0:
                 print("Число занадто мале!")
             else:
-                if deposit_cash <= connectdb.current_balance(user):
+                notes,amount = change_combinations(deposit_cash,connectdb.current_notes())
+                if notes is None:
+                    print(f"Нажаль таких купюри {amount} немає тому повертаємо")
+                    deposit_cash = deposit_cash - amount
                     notes,amount = change_combinations(deposit_cash,connectdb.current_notes())
-                    if notes is None:
-                        print(f"Нажаль таких купюри {amount} немає тому повертаємо")
-                        deposit_cash = deposit_cash - amount
-                        notes,amount = change_combinations(deposit_cash,connectdb.current_notes())
-                        print(f"Ваші купюри {notes}")
-                        connectdb.update_balance_deposit(user,deposit_cash)
-                        user_panel(user)
-                    else:
-                        print(f"Ваші купюри {notes}")
-                        connectdb.update_balance_deposit(user,deposit_cash)
-                        user_panel(user)
+                    print(f"Ваші купюри {notes}")
+                    connectdb.update_balance_deposit(user,deposit_cash)
+                    user_panel(user)
+                else:
+                    print(f"Ваші купюри {notes}")
+                    connectdb.update_balance_deposit(user,deposit_cash)
+                    user_panel(user)
         except:
             print("Неправильна дія!")
             user_panel(user)
