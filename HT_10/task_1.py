@@ -123,6 +123,9 @@ def user_panel(user):
                         connectdb.update_balance_withdraw(user,withdraw_cash)
                         print(f"Ваші купюри {notes}")
                         user_panel(user)
+                else:
+                    print("У вас немає скільки коштів!")
+                    user_panel(user)
         except:
             print("Неправильна дія!")
             user_panel(user)
