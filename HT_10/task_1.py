@@ -62,10 +62,39 @@ def login_user(user_data):
     else:
         return "Неправильна вказані дані спробуйте знову!",None
 
+def check_notes(notes):
+    try:
+        notes_list = [x for x,y in connectdb.current_notes()]
+        check_list =[True if int(x) in notes_list else False for x in notes]
+        if False in check_list:
+            return "Вказані купюри яких не існує",None
+        return "Все ок",True
+    except:
+        return "Введено некоректне значення",None
+    
+
+
+def check_amount(amount):
+    try:
+        check_list =[True if int(x) < 0 else False for x in amount]
+        if False in check_list:
+            return "Вказані числа невірні",None
+        return "Все ок",True
+    except:
+        return "Введено некоректне значення",None
+
 
 def taken_denominations():
     notes = (input("Введіть купюри які бажаєте забрати(номінал через пробіл): ")).split(" ")
+    text,valid = check_notes(notes)
+    if valid is None:
+        print(text)
+        return ""
     amount = (input("Введіть купюри які бажаєте забрати(кількість через пробіл): ")).split(" ")
+    text_am,valid_am = check_amount(amount)
+    if valid_am is None:
+        print(text_am)
+        return ""
     notes_data = list(zip(notes, amount))
     money = connectdb.update_notes(notes_data, False)
     if money == "Ok":
@@ -76,14 +105,22 @@ def taken_denominations():
 
 def give_denominations():
     notes = (input("Введіть купюри які бажаєте додати(номінал через пробіл): ")).split(" ")
+    text,valid = check_notes(notes)
+    if valid is None:
+        print(text)
+        return ""
     amount = (input("Введіть купюри які бажаєте додати(кількість через пробіл): ")).split(" ")
+    text_am,valid_am = check_amount(amount)
+    if valid_am is None:
+        print(text_am)
+        return ""
     notes_data = list(zip(notes, amount))
     connectdb.update_notes(notes_data, True)
     return f"Ви успішно додали {notes_data}"
 
 
 def admin_panel(user):
-    admin_action = input("Оберіть дію (забрати купюри(1), положити купюри(2), переглянути купюри(3),для виходу(4) напишіть цифру дії яку бажаєте обрати: ")
+    admin_action = input("Оберіть дію (забрати купюри(1), положити купюри(2), переглянути купюри(3),переглянути суму банка(4),для виходу(5) напишіть цифру дії яку бажаєте обрати: ")
     if admin_action == "1":
         taken_denominations()
         admin_panel(user)
@@ -94,6 +131,9 @@ def admin_panel(user):
         print(connectdb.current_notes())
         admin_panel(user)
     elif admin_action == "4":
+        print(f"Загальна сума в банку {sum(denomination * quantity for denomination, quantity in connectdb.current_notes())}")
+        admin_panel(user)
+    elif admin_action == "5":
         print("Гарного дня!")
     else:
         print("Неправильно обрана дія!")
