@@ -92,7 +92,8 @@ def check_amount(amount,deposit):
                 return "Вказані числа невірні",None
             return "Все ок",True
         else:
-            check_list =[True if int(x) < 0 else False for x in amount]
+            notes_list = [y for x,y in connectdb.current_notes()]
+            check_list =[True if int(amount[x]) <= notes_list[x] else False for x in range(len(amount))]
             if False in check_list:
                 return "Вказані числа невірні",None
             return "Все ок",True
