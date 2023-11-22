@@ -84,7 +84,7 @@ def check_notes(notes):
     
 
 
-def check_amount(amount,deposit):
+def check_amount(amount,deposit,note = None):
     try:
         if deposit:
             check_list =[True if int(x) > 0 else False for x in amount]
@@ -92,8 +92,13 @@ def check_amount(amount,deposit):
                 return "Вказані числа невірні",None
             return "Все ок",True
         else:
-            notes_list = [y for x,y in connectdb.current_notes()]
-            check_list =[True if int(amount[x]) <= notes_list[x] else False for x in range(len(amount))]
+            notes_list = []
+                note = [int(x) for x in note]
+                for x,y in connectdb.current_notes():
+                    for _ in note:
+                        if x == _:
+                            notes_list.append(y)
+                check_list =[True if int(amount[x]) <= notes_list[x] else False for x in range(len(amount))]
             if False in check_list:
                 return "Вказані числа невірні",None
             return "Все ок",True
@@ -108,7 +113,7 @@ def taken_denominations():
         print(text)
         return ""
     amount = (input("Введіть купюри які бажаєте забрати(кількість через пробіл): ")).split(" ")
-    text_am,valid_am = check_amount(amount,False)
+    text_am,valid_am = check_amount(amount,False,notes)
     if valid_am is None:
         print(text_am)
         return ""
