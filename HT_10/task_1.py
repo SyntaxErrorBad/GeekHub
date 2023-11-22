@@ -191,6 +191,8 @@ def user_panel(user):
             deposit_cash = int(deposit_cash)
             if deposit_cash < 0:
                 print("Число занадто мале!")
+            elif deposit_cash > 100000000:
+                print("Сума занадто велика!")
             else:
                 notes,amount = change_combinations(deposit_cash,connectdb.current_notes(),True)
                 if notes is None:
