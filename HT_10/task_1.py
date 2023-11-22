@@ -93,12 +93,12 @@ def check_amount(amount,deposit,note = None):
             return "Все ок",True
         else:
             notes_list = []
-                note = [int(x) for x in note]
-                for x,y in connectdb.current_notes():
-                    for _ in note:
-                        if x == _:
-                            notes_list.append(y)
-                check_list =[True if int(amount[x]) <= notes_list[x] else False for x in range(len(amount))]
+            note = [int(x) for x in note]
+            for x,y in connectdb.current_notes():
+                for _ in note:
+                    if x == _:
+                        notes_list.append(y)
+            check_list =[True if int(amount[x]) <= notes_list[x] else False for x in range(len(amount))]
             if False in check_list:
                 return "Вказані числа невірні",None
             return "Все ок",True
