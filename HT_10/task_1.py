@@ -20,9 +20,8 @@
 #     - зняти можна лише в межах власного балансу, але не більше ніж є всього в банкоматі.
 #     - при неможливості виконання якоїсь операції - вивести повідомлення з причиною
 #     (не вірний логін/пароль, недостатньо коштів на раунку, неможливо видати суму наявними купюрами тощо.)
-import random
-from connect_db import connectDB
-
+from connect_db import connectdb
+import random 
 
 def change_combinations(amount, denominations):
     denominations = denominations[::-1]
@@ -35,39 +34,40 @@ def change_combinations(amount, denominations):
             quantity -= 1
 
     if amount == 0:
-        return combinations
+        return combinations,None
     else:
-        return None
-    
-
-def withdraw_money(user):
-    withdraw_cash = int(input("Введіть суму яку бажаєте зняти(наприклад 1350(Без знака -)): "))
-    if withdraw_cash < 0:
-        withdraw_cash = withdraw_cash * -1
-
-    if withdraw_cash <= connectDB.current_balance(user):
-        note = change_combinations(withdraw_cash, connectDB.current_notes())
-        if note is not None:
-            connectDB.update_balance_withdraw(user, withdraw_cash, note)
-            return f"Ви зняли {withdraw_cash} успішно"
-        return f"Вибачте ви не можете зняти цю суму(Не має таких купюр)"
-    return f"Замало коштів спробуйте іншу суму!"
+        return None,amount
 
 
-def deposit_money(user):
-    deposit_cash = int(input("Введіть суму яку бажаєте зняти(наприклад 1350(Без знака -)): "))
-    note = change_combinations(deposit_cash, connectDB.current_notes())
-    if note is not None:
-        connectDB.update_balance_deposit(user, deposit_cash, note)
-        return f"Ви положили на депозит {deposit_cash} успішно"
-    return f"Вибачте ви не можете положити цю суму(Ці купюри не приймаються)"
+def reg_user(user_data):
+    user_data = user_data.split(" ")
+    if len(user_data) == 2:
+        if connectdb.check_user_login(user_data):
+            return "Логін вже існує"
+        money = [10, 20, 50, 100, 200, 500, 1000]
+        text = connectdb.register_user(user_data,random.choice(money))
+        if text == "Все чудово ви зареєстровані":
+            return f"User: {user_data[0]}"
+        else:
+            return text
+    else:
+        return "Неправильна вказані дані спробуйте знову!"
+
+
+def login_user(user_data):
+    user_data = user_data.split(" ")
+    if len(user_data) == 2:
+        text,user = connectdb.check_user(user_data)
+        return text,user
+    else:
+        return "Неправильна вказані дані спробуйте знову!",None
 
 
 def taken_denominations():
     notes = (input("Введіть купюри які бажаєте забрати(номінал через пробіл): ")).split(" ")
     amount = (input("Введіть купюри які бажаєте забрати(кількість через пробіл): ")).split(" ")
     notes_data = list(zip(notes, amount))
-    money = connectDB.update_notes(notes_data, False)
+    money = connectdb.update_notes(notes_data, False)
     if money == "Ok":
         return f"Ви успішно забрали {notes_data}"
     else:
@@ -78,97 +78,118 @@ def give_denominations():
     notes = (input("Введіть купюри які бажаєте додати(номінал через пробіл): ")).split(" ")
     amount = (input("Введіть купюри які бажаєте додати(кількість через пробіл): ")).split(" ")
     notes_data = list(zip(notes, amount))
-    connectDB.update_notes(notes_data, True)
+    connectdb.update_notes(notes_data, True)
     return f"Ви успішно додали {notes_data}"
 
 
-def user_panel(user: str):
-    if user == "admin":
-        print("Для повернення в адмін панель (5)")
-    user_action = input("Оберіть дію (зняти кошти(1), положити кошти(2), "
-                        "переглянути рахунок(3),для виходу(4)) напишіть цифру дії яку бажаєте обрати: ")
-    if user_action == "1":
-        print(withdraw_money(user))
-        user_panel(user)
-    elif user_action == "2":
-        print(deposit_money(user))
-        user_panel(user)
-    elif user_action == "3":
-        print(connectDB.current_balance(user))
-        user_panel(user)
-    elif user_action == "4":
-        print(f"Гарного дня {user}")
-        exit()
-    else:
-        if user == "admin":
-            if user_action == "5":
-                admin_panel(user)
-        print(f"Невірна команда!")
-        user_panel(user)
-
-
-def admin_panel(user: str):
-    admin_action = input("Оберіть дію (забрати купюри(1), положити купюри(2), "
-                         "переглянути купюри(3),для виходу(4),для перевірки рахунку "
-                         "звичайного користувача(5)) напишіть цифру дії яку бажаєте обрати: ")
+def admin_panel(user):
+    admin_action = input("Оберіть дію (забрати купюри(1), положити купюри(2), переглянути купюри(3),для виходу(4) напишіть цифру дії яку бажаєте обрати: ")
     if admin_action == "1":
-        print(taken_denominations())
+        taken_denominations()
         admin_panel(user)
     elif admin_action == "2":
-        print(give_denominations())
+        give_denominations()
         admin_panel(user)
     elif admin_action == "3":
-        print(connectDB.current_notes())
+        print(connectdb.current_notes())
         admin_panel(user)
     elif admin_action == "4":
-        print(f"Гарного дня {user}")
-        exit()
-    elif admin_action == "5":
-        print(f"Ви переходите до аккаунта звичайного юзера {user}")
-        user_panel(user)
+        print("Гарного дня!")
     else:
-        print(f"Невірна команда!")
+        print("Неправильно обрана дія!")
         admin_panel(user)
 
 
-def register_user():
-    money = [10, 20, 50, 100, 200, 500, 1000]
-    reg_quest = input("Бажаєте зареєструватись?(Так(1),Ні(2)): ")
-    if reg_quest == "1":
-        user = (input("Введіть логін та пароль через пробіл: ")).split(" ")
-        print(connectDB.register_user(user, random.choice(money)))
-        user_text, user_in_db, admin = connectDB.check_user(user)
-        if user_in_db:
-            print(user_text)
-            if admin:
-                admin_panel(user[0])
+def user_panel(user):
+    user_action = input("Оберіть дію (зняти кошти(1), положити кошти(2), переглянути рахунок(3),для виходу(4)) напишіть цифру дії яку бажаєте обрати: ")
+    if user_action == "1":
+        withdraw_cash = input("Введіть число яке хочете зняти(воно має бути додатнім): ")
+        try:
+            withdraw_cash = int(withdraw_cash)
+            if withdraw_cash < 0:
+                print("Число занадто мале!")
+                user_panel(user)
             else:
-                user_panel(user[0])
-        else:
-            print(user_text)
-            register_user()
+                if withdraw_cash <= connectdb.current_balance(user):
+                    notes,amount = change_combinations(withdraw_cash,connectdb.current_notes())
+                    if notes is None:
+                        print(f"Нажаль таких купюри {amount} немає тому повертаємо")
+                        withdraw_cash = withdraw_cash - amount
+                        notes,amount = change_combinations(withdraw_cash,connectdb.current_notes())
+                        print(f"Ваші купюри {notes}")
+                        user_panel(user)
+                    else:
+                        print(f"Ваші купюри {notes}")
+                        user_panel(user)
+        except:
+            print("Неправильна дія!")
+            user_panel(user)
 
-    elif reg_quest == "2":
-        user = (input("Введіть логін та пароль через пробіл: ")).split(" ")
-        user_text, user_in_db, admin = connectDB.check_user(user)
-        if user_in_db:
-            print(user_text)
-            if admin:
-                admin_panel(user[0])
+    elif user_action == "2":
+        deposit_cash = input("Введіть число яке хочете покласти на рахунок(воно має бути додатнім): ")
+        try:
+            deposit_cash = int(deposit_cash)
+            if deposit_cash < 0:
+                print("Число занадто мале!")
             else:
-                user_panel(user[0])
-        else:
-            print(user_text)
-            register_user()
+                if deposit_cash <= connectdb.current_balance(user):
+                    notes,amount = change_combinations(deposit_cash,connectdb.current_notes())
+                    if notes is None:
+                        print(f"Нажаль таких купюри {amount} немає тому повертаємо")
+                        deposit_cash = deposit_cash - amount
+                        notes,amount = change_combinations(deposit_cash,connectdb.current_notes())
+                        print(f"Ваші купюри {notes}")
+                        user_panel(user)
+                    else:
+                        print(f"Ваші купюри {notes}")
+                        user_panel(user)
+        except:
+            print("Неправильна дія!")
+            user_panel(user)
 
+    elif user_action == "3":
+        balance = connectdb.current_balance(user)
+        print(f"Ваш баланс: {balance}")
+        user_panel(user)
+
+    elif user_action == "4":
+        print("Гарного дня!")
     else:
         print("Неправильно обрана дія!")
-        register_user()
+        user_panel(user)
 
+
+def start():
+    start_quest = input("Для того щоб зайти в аккаунт(1), для того щоб зареєструватись (2),для виходу (3)")
+    if start_quest == "1":
+        login_user_quest = input("Введіть логін та пароль через відступ( )")
+        login,user = login_user(login_user_quest)
+        if login == "Вітаю ви зайшли до аккаунта!":
+            if user == "admin":
+                admin_panel(user)
+            else:
+                user_panel(user)
+        else:
+            print("Невірний логін або пароль!")
+            start()
+    elif start_quest == "2":
+        reg_user_quest = input("Введіть логін та пароль через відступ( )")
+        user = reg_user(reg_user_quest)
+        if user.startswith("User: "):
+            user = user.split(" ")[-1]
+            user_panel(user)
+        else:
+            print(user)
+            start()
+    elif start_quest == "3":
+        print("Гарного дня!")
+        exit()
+    else:
+        print("Неправильна дія, спробуйте знову!")
+        start()
 
 def main():
-    register_user()
-
+    start()
 
 if __name__ == "__main__":
     main()
