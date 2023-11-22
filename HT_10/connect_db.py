@@ -83,12 +83,12 @@ class ConnectDB:
         self.cursor.execute("SELECT balance FROM users WHERE username=? ", (user,))
         return (self.cursor.fetchone())[0]
     
-    def update_balance_withdraw(self, user, withdraw,note):
+    def update_balance_withdraw(self, user, withdraw):
         new_balance = self.current_balance(user) - withdraw
         self.cursor.execute('UPDATE users SET balance = ? WHERE username = ?', (new_balance, user))
         self.conn.commit()
     
-    def update_balance_deposit(self,user,deposit,note):
+    def update_balance_deposit(self,user,deposit):
         new_balance = self.current_balance(user) + deposit
         self.cursor.execute('UPDATE users SET balance = ? WHERE username = ?', (new_balance, user))
         self.conn.commit()
@@ -127,5 +127,7 @@ class ConnectDB:
                 new_quantity = quantity - int(note[-1])
                 self.cursor.execute('UPDATE atm_notes SET quantity = ? WHERE denomination = ?', (new_quantity, note[0]))
                 self.conn.commit()
+
+
 
 connectdb = ConnectDB()
