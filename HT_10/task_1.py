@@ -186,7 +186,7 @@ def user_panel(user):
             user_panel(user)
 
     elif user_action == "2":
-        deposit_cash = input("Введіть число яке хочете покласти на рахунок(воно має бути додатнім): ")
+        deposit_cash = input("Введіть число яке хочете покласти на рахунок(воно має бути додатнім(обмеження для 1 поклажі: 100_000_000)): ")
         try:
             deposit_cash = int(deposit_cash)
             if deposit_cash < 0:
