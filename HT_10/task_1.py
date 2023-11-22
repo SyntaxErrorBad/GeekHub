@@ -23,8 +23,19 @@
 from connect_db import connectdb
 import random 
 
-def change_combinations(amount, denominations):
+def change_combinations(amount, denominations,deposit):
+    if deposit:
+        denominations = [
+            (10, 100000),
+            (20, 100000),
+            (50, 100000),
+            (100, 100000),
+            (200, 100000),
+            (500, 1000000),
+            (1000, 1000000)
+        ]
     denominations = denominations[::-1]
+    print(denominations)
     combinations = []
 
     for denomination, quantity in denominations:
@@ -74,12 +85,18 @@ def check_notes(notes):
     
 
 
-def check_amount(amount):
+def check_amount(amount,deposit):
     try:
-        check_list =[True if int(x) < 0 else False for x in amount]
-        if False in check_list:
-            return "Вказані числа невірні",None
-        return "Все ок",True
+        if deposit:
+            check_list =[True if int(x) > 0 else False for x in amount]
+            if False in check_list:
+                return "Вказані числа невірні",None
+            return "Все ок",True
+        else:
+            check_list =[True if int(x) < 0 else False for x in amount]
+            if False in check_list:
+                return "Вказані числа невірні",None
+            return "Все ок",True
     except:
         return "Введено некоректне значення",None
 
@@ -91,7 +108,7 @@ def taken_denominations():
         print(text)
         return ""
     amount = (input("Введіть купюри які бажаєте забрати(кількість через пробіл): ")).split(" ")
-    text_am,valid_am = check_amount(amount)
+    text_am,valid_am = check_amount(amount,False)
     if valid_am is None:
         print(text_am)
         return ""
@@ -110,7 +127,7 @@ def give_denominations():
         print(text)
         return ""
     amount = (input("Введіть купюри які бажаєте додати(кількість через пробіл): ")).split(" ")
-    text_am,valid_am = check_amount(amount)
+    text_am,valid_am = check_amount(amount,True)
     if valid_am is None:
         print(text_am)
         return ""
@@ -120,7 +137,7 @@ def give_denominations():
 
 
 def admin_panel(user):
-    admin_action = input("Оберіть дію (забрати купюри(1), положити купюри(2), переглянути купюри(3),переглянути суму банка(4),для виходу(5) напишіть цифру дії яку бажаєте обрати: ")
+    admin_action = input("Оберіть дію (забрати купюри(1), положити купюри(2), переглянути купюри(3),для виходу(4) напишіть цифру дії яку бажаєте обрати: ")
     if admin_action == "1":
         taken_denominations()
         admin_panel(user)
@@ -129,11 +146,9 @@ def admin_panel(user):
         admin_panel(user)
     elif admin_action == "3":
         print(connectdb.current_notes())
-        admin_panel(user)
-    elif admin_action == "4":
         print(f"Загальна сума в банку {sum(denomination * quantity for denomination, quantity in connectdb.current_notes())}")
         admin_panel(user)
-    elif admin_action == "5":
+    elif admin_action == "4":
         print("Гарного дня!")
     else:
         print("Неправильно обрана дія!")
@@ -151,11 +166,11 @@ def user_panel(user):
                 user_panel(user)
             else:
                 if withdraw_cash <= connectdb.current_balance(user):
-                    notes,amount = change_combinations(withdraw_cash,connectdb.current_notes())
+                    notes,amount = change_combinations(withdraw_cash,connectdb.current_notes(),False)
                     if notes is None:
                         print(f"Нажаль таких купюри {amount} немає тому повертаємо")
                         withdraw_cash = withdraw_cash - amount
-                        notes,amount = change_combinations(withdraw_cash,connectdb.current_notes())
+                        notes,amount = change_combinations(withdraw_cash,connectdb.current_notes(),False)
                         print(f"Ваші купюри {notes}")
                         connectdb.update_balance_withdraw(user,withdraw_cash)
                         user_panel(user)
@@ -177,11 +192,11 @@ def user_panel(user):
             if deposit_cash < 0:
                 print("Число занадто мале!")
             else:
-                notes,amount = change_combinations(deposit_cash,connectdb.current_notes())
+                notes,amount = change_combinations(deposit_cash,connectdb.current_notes(),True)
                 if notes is None:
                     print(f"Нажаль таких купюри {amount} немає тому повертаємо")
                     deposit_cash = deposit_cash - amount
-                    notes,amount = change_combinations(deposit_cash,connectdb.current_notes())
+                    notes,amount = change_combinations(deposit_cash,connectdb.current_notes(),True)
                     print(f"Ваші купюри {notes}")
                     connectdb.update_balance_deposit(user,deposit_cash)
                     user_panel(user)
