@@ -117,8 +117,10 @@ def user_panel(user):
                         withdraw_cash = withdraw_cash - amount
                         notes,amount = change_combinations(withdraw_cash,connectdb.current_notes())
                         print(f"Ваші купюри {notes}")
+                        connectdb.update_balance_withdraw(user,withdraw_cash)
                         user_panel(user)
                     else:
+                        connectdb.update_balance_withdraw(user,withdraw_cash)
                         print(f"Ваші купюри {notes}")
                         user_panel(user)
         except:
@@ -139,9 +141,11 @@ def user_panel(user):
                         deposit_cash = deposit_cash - amount
                         notes,amount = change_combinations(deposit_cash,connectdb.current_notes())
                         print(f"Ваші купюри {notes}")
+                        connectdb.update_balance_deposit(user,deposit_cash)
                         user_panel(user)
                     else:
                         print(f"Ваші купюри {notes}")
+                        connectdb.update_balance_deposit(user,deposit_cash)
                         user_panel(user)
         except:
             print("Неправильна дія!")
