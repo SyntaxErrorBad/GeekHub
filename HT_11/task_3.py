@@ -1,5 +1,9 @@
+# 3. Банкомат 2.0: переробіть программу з функціонального підходу
+# програмування на використання класів. Додайте шанс 10% отримати бонус
+# на баланс при створенні нового користувача.
 from connect_db import connectdb
 import random
+
 
 class UserLoginReg:
     def __init__(self) -> None:
@@ -22,7 +26,7 @@ class UserLoginReg:
     def random_drop(self):
         money = [10, 20, 50, 100, 200, 500, 1000]
         self.balance = random.choice(money)
-        if random.randint(1,10) == 1:
+        if random.randint(1, 10) == 1:
             print("Вам пощастило ви виграли + 10% на баланс")
             self.balance = self.balance + (self.balance * 0.1)
 
@@ -30,45 +34,45 @@ class ATM_ADMIN:
     def __init__(self) -> None:
         self.user_data = "admin"
     
-    def check_amount(self,amount,deposit,note = None):
+    def check_amount(self, amount, deposit, note=None):
         try:
             if deposit:
-                check_list =[True if int(x) > 0 else False for x in amount]
+                check_list = [True if int(x) > 0 else False for x in amount]
                 if False in check_list:
-                    return "Вказані числа невірні",None
-                return "Все ок",True
+                    return "Вказані числа невірні", None
+                return "Все ок", True
             else:
                 notes_list = []
                 note = [int(x) for x in note]
-                for x,y in connectdb.current_notes():
+                for x, y in connectdb.current_notes():
                     for _ in note:
                         if x == _:
                             notes_list.append(y)
                 check_list =[True if int(amount[x]) <= notes_list[x] else False for x in range(len(amount))]
                 if False in check_list:
-                    return "Вказані числа невірні",None
-                return "Все ок",True
+                    return "Вказані числа невірні", None
+                return "Все ок", True
         except:
-            return "Введено некоректне значення",None
+            return "Введено некоректне значення", None
     
-    def check_notes(self,notes):
+    def check_notes(self, notes):
         try:
-            notes_list = [x for x,y in connectdb.current_notes()]
+            notes_list = [x for x, y in connectdb.current_notes()]
             check_list =[True if int(x) in notes_list else False for x in notes]
             if False in check_list:
-                return "Вказані купюри яких не існує",None
-            return "Все ок",True
+                return "Вказані купюри яких не існує", None
+            return "Все ок", True
         except:
-            return "Введено некоректне значення",None
+            return "Введено некоректне значення", None
 
     def taken_denominations(self):
         notes = (input("Введіть купюри які бажаєте забрати(номінал через пробіл): ")).split(" ")
-        text,valid = self.check_notes(notes)
+        text, valid = self.check_notes(notes)
         if valid is None:
             print(text)
             return ""
         amount = (input("Введіть купюри які бажаєте забрати(кількість через пробіл): ")).split(" ")
-        text_am,valid_am = self.check_amount(amount,False,notes)
+        text_am, valid_am = self.check_amount(amount, False, notes)
         if valid_am is None:
             print(text_am)
             return ""
@@ -81,12 +85,12 @@ class ATM_ADMIN:
 
     def give_denominations(self):
         notes = (input("Введіть купюри які бажаєте додати(номінал через пробіл): ")).split(" ")
-        text,valid = self.check_notes(notes)
+        text, valid = self.check_notes(notes)
         if valid is None:
             print(text)
             return ""
         amount = (input("Введіть купюри які бажаєте додати(кількість через пробіл): ")).split(" ")
-        text_am,valid_am = self.check_amount(amount,True)
+        text_am, valid_am = self.check_amount(amount, True)
         if valid_am is None:
             print(text_am)
             return ""
@@ -179,14 +183,16 @@ class ATM_USER:
 
 
 def user_panel(atm):
-    user_action = input("Оберіть дію (зняти кошти(1), положити кошти(2), переглянути рахунок(3),для виходу(4)) напишіть цифру дії яку бажаєте обрати: ")
+    user_action = input("Оберіть дію (зняти кошти(1), положити кошти(2), переглянути рахунок(3),"
+                        "для виходу(4)) напишіть цифру дії яку бажаєте обрати: ")
     if user_action == "1":
         withdraw_cash = input("Введіть число яке хочете зняти(воно має бути додатнім): ")
         atm.withdraw_cash_user(withdraw_cash)
         user_panel(atm)
 
     elif user_action == "2":
-        deposit_cash = input("Введіть число яке хочете покласти на рахунок(воно має бути додатнім(обмеження для 1 поклажі: 100_000_000)): ")
+        deposit_cash = input("Введіть число яке хочете покласти на рахунок"
+                             "(воно має бути додатнім(обмеження для 1 поклажі: 100_000_000)): ")
         atm.deposit_cash_user(deposit_cash)
         user_panel(atm)
 
@@ -203,7 +209,8 @@ def user_panel(atm):
 
 
 def admin_panel(atm_admin):
-    admin_action = input("Оберіть дію (забрати купюри(1), положити купюри(2), переглянути купюри(3),для виходу(4) напишіть цифру дії яку бажаєте обрати: ")
+    admin_action = input("Оберіть дію (забрати купюри(1), положити купюри(2), переглянути купюри(3),"
+                         "для виходу(4) напишіть цифру дії яку бажаєте обрати: ")
     if admin_action == "1":
         atm_admin.taken_denominations()
         admin_panel(atm_admin)
@@ -212,7 +219,8 @@ def admin_panel(atm_admin):
         admin_panel(atm_admin)
     elif admin_action == "3":
         print(connectdb.current_notes())
-        print(f"Загальна сума в банку {sum(denomination * quantity for denomination, quantity in connectdb.current_notes())}")
+        print(f"Загальна сума в банку "
+              f"{sum(denomination * quantity for denomination, quantity in connectdb.current_notes())}")
         admin_panel(atm_admin)
     elif admin_action == "4":
         print("Гарного дня!")
