@@ -1,3 +1,5 @@
+#Тестовий файл просто щоб заповнить БД книгами
+
 from connect_db import connectdb
 import random
 
@@ -32,4 +34,3 @@ for i in range(10):
                             books_dict["category"])
                             )
     connectdb.conn.commit()
-print(books_dict)
