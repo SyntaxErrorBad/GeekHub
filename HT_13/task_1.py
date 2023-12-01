@@ -11,8 +11,9 @@ class Figure:
     def color(self):
         return self._color
 
-    def set_color(self, color):
-        self._color = color
+    @color.setter
+    def color(self, value):
+        self._color = value
 
 
 class Oval(Figure):
@@ -40,8 +41,8 @@ square_obj = Square(7)
 print(oval_obj)
 print(square_obj)
 
-oval_obj.set_color('blue')
-square_obj.set_color('red')
+oval_obj.color = 'blue'
+square_obj.color = 'red'
 
 print(oval_obj.color)
 print(square_obj.color)
