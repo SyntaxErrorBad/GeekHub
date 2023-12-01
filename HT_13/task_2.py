@@ -1,148 +1,242 @@
 # 2. Створіть за допомогою класів та продемонструйте свою реалізацію
 # шкільної бібліотеки (включіть фантазію). Наприклад вона може містити класи Person,
 # Teacher, Student, Book, Shelf, Author, Category і.т.д.
+from connect_db import connectdb
+
 class Person:
-    def __init__(self, name, age, role):
+    def __init__(self, name, age, role,gender):
         self.name = name
         self.age = age
         self.role = role
+        self.gender = gender
 
-    def get_name(self):
-        return self.name
-
-    def get_age(self):
-        return self.age
-
-    def get_role(self):
-        return self.role
-
-
+    
 class Teacher(Person):
-    def __init__(self, name, age, role, subject):
-        super().__init__(name, age, role)
+    def __init__(self, name, age, role, gender, subject):
+        super().__init__(name, age, role, gender)
         self.subject = subject
+        self.subject_school = ["Mathematics", "English Language", "History", "Physics", "Chemistry", "Biology", "Geography", "Art", "Physical Education", "Computer Science"]
+    
+    def register_teacher(self):
+        if self.subject in self.subject_school:
+            if self.gender == "1" or self.gender == "2":
+                if connectdb.register_user(self.role,self.name,self.age,self.gender,self.subject):
+                    return True
+        return False
 
-    def get_subject(self):
-        return self.subject
+    def login_teacher(self):
+        if self.subject in self.subject_school:
+            if self.gender == "1" or self.gender == "2":
+                return connectdb.login_user(self.role,self.name,self.age,self.gender,self.subject)
+
+        return False
 
 
 class Student(Person):
-    def __init__(self, name, age, role, grade):
-        super().__init__(name, age, role)
+    def __init__(self, name, age, role, gender, grade):
+        super().__init__(name, age, role, gender)
         self.grade = grade
+        self.grade_school = [i for i in range(1,12)]
 
-    def get_grade(self):
-        return self.grade
+    def register_student(self):
+        if int(self.grade) in self.grade_school:
+            if self.gender == "1" or self.gender == "2":
+                if connectdb.register_user(self.role,self.name,self.age,self.gender,self.grade):
+                    return True
+        return False
+
+    def login_student(self):
+        if int(self.grade) in self.grade_school:
+            if self.gender == "1" or self.gender == "2":
+                return connectdb.login_user(self.role,self.name,self.age,self.gender,self.grade)
+
+        return False
 
 
 class Book:
-    def __init__(self, title, author, category, isbn):
+    def __init__(self, title, author=None, category=None, isbn=None,grade=None):
         self.title = title
         self.author = author
         self.category = category
         self.isbn = isbn
-
-    def get_title(self):
-        return self.title
-
-    def get_author(self):
-        return self.author
-
-    def get_category(self):
-        return self.category
-
-    def get_isbn(self):
-        return self.isbn
-
-
-class Shelf:
-    def __init__(self, capacity):
-        self.capacity = capacity
-        self.books = []
-
-    def get_capacity(self):
-        return self.capacity
-
-    def add_book(self, book):
-        if self.is_full():
-            raise Exception("Стеллаж переповнений")
-        else:
-            self.books.append(book)
-
-    def remove_book(self, book):
-        self.books.remove(book)
-
-    def is_full(self):
-        return len(self.books) == self.capacity
-
-
-class Author:
-    def __init__(self, name, surname):
-        self.name = name
-        self.surname = surname
-
-    def get_name(self):
-        return self.name
-
-    def get_surname(self):
-        return self.surname
-
-
-class Category:
-    def __init__(self, name):
-        self.name = name
-
-    def get_name(self):
-        return self.name
-    
-
-class Grade:
-    def __init__(self, student_grade, grade):
         self.grade = grade
-        self.student_grade = student_grade
-
-    def get_grade(self):
-        return self.grade
     
-    def get_student_grade(self):
-        return self.student_grade
+    def get_count_all_books(self):
+        return sum([int(_[0]) for _ in connectdb.take_count()])
+
+    def get_count_book(self):
+        if self.check_book_in_shelf():
+            return connectdb.take_count_one_now(self.title)[0]
+        return "The book does not exist in Shelf"
+
+    def check_book_in_shelf(self):
+        if connectdb.find_book_by_title(self.title) is None:
+            return False
+        return True
+
+
+        
+
+
+class Shelf(Book):
+    def __init__(self,title=None,author=None, category=None, isbn=None, grade=None):
+        super().__init__(title, author, category, isbn, grade)
+
+    def add_book_in_shelf_count(self,count=1):
+        if self.check_is_full_book(count):
+            connectdb.add_book_in_db_by_title(self.title,count)
+            return "All good, U add book"
+        return "Something Wrong Try again"
     
-    def check_grade(self):
-        return self.student_grade == self.grade
+    def remove_book_in_shelf_count(self,count=1):
+        if self.check_is_zero_book(count):
+            connectdb.remove_book_in_db_by_title(self.title,count)
+            return "Take u book!"
+        return "Something Wrong Try again"
+
+    def find_book_in_shelf_by_author(self):
+        books = connectdb.find_books_by_author(self.author)
+        print(books)
+        return '\n'.join([book[0] for book in books])
     
+    def find_book_in_shelf_by_isbn(self):
+        books = connectdb.find_books_by_isbn(self.isbn)
+        print(books)
+        return '\n'.join([book[0] for book in books])
+    
+    def find_book_in_shelf_by_grade(self):
+        books = connectdb.find_books_by_grade(self.grade)
+        print(books)
+        return '\n'.join([book[0] for book in books])
+    
+    def check_is_full_book(self,count):
+        if connectdb.take_count_one_now(self.title)[0] == connectdb.take_count_one(self.title)[0]:
+            return False
+        else:
+            free_books = connectdb.take_count_one(self.title)[0] - connectdb.take_count_one_now(self.title)[0]
+            if free_books >= count:
+                return True
+            else:
+                return False
+    
+    def check_is_zero_book(self,count):
+        if connectdb.take_count_one_now(self.title)[0] == 0:
+            return False
+        else:
+            if connectdb.take_count_one_now(self.title)[0] >= count:
+                return True
+            else:
+                return False
 
-teacher = Teacher("John Doe", 45, "Teacher", "Math")
-print(teacher.get_name())  
-print(teacher.get_age())  
-print(teacher.get_role())  
-print(teacher.get_subject())  
+
+def use_bookshelf():
+    quest_book = input("What u want?\nTake book(1)\nPut book(2)\nFind number books(3)\nExit(4)\nAnswer: ")
+    if quest_book == "1":
+        title = input("Books title: ")
+        author = input("Books author(write 'No' if forget)")
+        category = input("Books category(write 'No' if forget)")
+        isbn = input("Books isbn(write 'No' if forget)")
+        grade = input("Books grade(write 'No' if forget)")
+        shelf = Shelf(title,
+                      None if author == "No" else author,
+                      None if category == "No" else category,
+                      None if isbn == "No" else isbn,
+                      None if grade == "No" else grade
+                      )
+        print(shelf.remove_book_in_shelf_count(int(input("Pls enter Books count: "))))
+        use_bookshelf()
+    elif quest_book == "2":
+        title = input("Books title: ")
+        author = input("Books author(write 'No' if forget)")
+        category = input("Books category(write 'No' if forget)")
+        isbn = input("Books isbn(write 'No' if forget)")
+        grade = input("Books grade(write 'No' if forget)")
+        shelf = Shelf(title,
+                      None if author == "No" else author,
+                      None if category == "No" else category,
+                      None if isbn == "No" else isbn,
+                      None if grade == "No" else grade
+                      )
+        print(shelf.add_book_in_shelf_count(int(input("Pls enter Books count: "))))
+        use_bookshelf()
+    elif quest_book == "3":
+        title = input("Books title: ")
+        author = input("Books author(write 'No' if forget)")
+        category = input("Books category(write 'No' if forget)")
+        isbn = input("Books isbn(write 'No' if forget)")
+        grade = input("Books grade(write 'No' if forget)")
+        shelf = Shelf(title,
+                      None if author == "No" else author,
+                      None if category == "No" else category,
+                      None if isbn == "No" else isbn,
+                      None if grade == "No" else grade
+                      )
+        print(f"Books in db: {shelf.get_count_book()}")
+        use_bookshelf()
+    elif quest_book == "4":
+        exit()
+    else:
+        print("Wrong Answer")
+        use_bookshelf()
+
+def check_users(login):
+    role = input("Who you are?\nTeacher(1)\nStudent(2)\n Answer: ")
+    if role == "1":
+        subjects = ["Mathematics", "English Language", "History", "Physics", "Chemistry", "Biology", "Geography", "Art", "Physical Education", "Computer Science"]
+        teacher = Teacher(input("Name: "),int(input("Age: ")),"teacher",input("Gender\nmale(1)\nfemale(2): "),input(f"subjects: {subjects} choose only one: "))
+        if login == "1":
+            check = teacher.register_teacher()
+            if check:
+                use_bookshelf()
+            else:
+                print("Wrong answer!")
+                start()
+        else:
+            check = teacher.login_teacher()
+            print(check)
+            if check:
+                use_bookshelf()
+            else:
+                print("Wrong answer!")
+                start()
 
 
-student = Student("Jane Smith", 16, "Student", 10)
-print(student.get_name())
-print(student.get_age())  
-print(student.get_role())  
-print(student.get_grade())  
+    elif role == "2":
+        grades = [i for i in range(1,12)]
+        student = Student(input("Name: "),int(input("Age: ")),"student",input("Gender\n male(1)\n female(2): "),input(f"grade: {grades} choose only one: "))
+        if login == "1":
+            check = student.register_student()
+            if check:
+                use_bookshelf()
+            else:
+                print("Wrong answer!")
+                start()
+        else:
+            check = student.login_student()
+            if check:
+                use_bookshelf()
+            else:
+                print("Wrong answer!")
+                start()
+    else:
+        print("Wrong answer!")
+        start()
 
 
-book = Book("The Adventures of Tom Sawyer", "Mark Twain", "Adventure", "90730378383")
-print(book.get_title())
-print(book.get_author())  
-print(book.get_category())  
-print(book.get_isbn())  
+def start():
+    question = input("Want Register?:\nYes(1)\nNo(2)\nExit(3)\nAnswer: ")
+    if question == "1" or question == "2":
+        check_users(question)
+    elif question == "3":
+        exit()
+    else:
+        print("Wrong answer!")
+        start()
 
-shelf = Shelf(10)
-shelf.add_book(book)
-print(shelf.get_capacity())
 
-author = Author("Mark", "Twain")
-print(author.get_name())
-print(author.get_surname())
 
-category = Category("Ukr History")
-print(category.get_name())
+def main():
+    start()
 
-grade = Grade(8, 8)
-print(grade.get_grade())
-print(grade.get_student_grade())
-print(grade.check_grade())
+if __name__ == "__main__":
+    main()
