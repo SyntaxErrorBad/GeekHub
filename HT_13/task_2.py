@@ -19,14 +19,13 @@ class Teacher(Person):
     
     def register_teacher(self):
         if self.subject in self.subject_school:
-            if self.gender == "1" or self.gender == "2":
-                if connectdb.register_user(self.role,self.name,self.age,self.gender,self.subject):
-                    return True
+            if self.gender in ("1", "2"):
+                return connectdb.register_user(self.role,self.name,self.age,self.gender,self.subject)
         return False
 
     def login_teacher(self):
         if self.subject in self.subject_school:
-            if self.gender == "1" or self.gender == "2":
+            if self.gender in ("1", "2"):
                 return connectdb.login_user(self.role,self.name,self.age,self.gender,self.subject)
 
         return False
@@ -40,14 +39,14 @@ class Student(Person):
 
     def register_student(self):
         if int(self.grade) in self.grade_school:
-            if self.gender == "1" or self.gender == "2":
+            if self.gender in ("1", "2"):
                 if connectdb.register_user(self.role,self.name,self.age,self.gender,self.grade):
                     return True
         return False
 
     def login_student(self):
         if int(self.grade) in self.grade_school:
-            if self.gender == "1" or self.gender == "2":
+            if self.gender in ("1", "2"):
                 return connectdb.login_user(self.role,self.name,self.age,self.gender,self.grade)
 
         return False
@@ -82,13 +81,13 @@ class Shelf(Book):
     def __init__(self,title=None,author=None, category=None, isbn=None, grade=None):
         super().__init__(title, author, category, isbn, grade)
 
-    def add_book_in_shelf_count(self,count=1):
+    def add_book_in_shelf_count(self, count=1):
         if self.check_is_full_book(count):
             connectdb.add_book_in_db_by_title(self.title,count)
             return "All good, U add book"
         return "Something Wrong Try again"
     
-    def remove_book_in_shelf_count(self,count=1):
+    def remove_book_in_shelf_count(self, count=1):
         if self.check_is_zero_book(count):
             connectdb.remove_book_in_db_by_title(self.title,count)
             return "Take u book!"
@@ -144,7 +143,6 @@ def use_bookshelf():
                       None if grade == "No" else grade
                       )
         print(shelf.remove_book_in_shelf_count(int(input("Pls enter Books count: "))))
-        use_bookshelf()
     elif quest_book == "2":
         title = input("Books title: ")
         author = input("Books author(write 'No' if forget)")
@@ -158,7 +156,6 @@ def use_bookshelf():
                       None if grade == "No" else grade
                       )
         print(shelf.add_book_in_shelf_count(int(input("Pls enter Books count: "))))
-        use_bookshelf()
     elif quest_book == "3":
         title = input("Books title: ")
         author = input("Books author(write 'No' if forget)")
@@ -172,12 +169,11 @@ def use_bookshelf():
                       None if grade == "No" else grade
                       )
         print(f"Books in db: {shelf.get_count_book()}")
-        use_bookshelf()
     elif quest_book == "4":
         exit()
     else:
         print("Wrong Answer")
-        use_bookshelf()
+    use_bookshelf()
 
 def check_users(login):
     role = input("Who you are?\nTeacher(1)\nStudent(2)\n Answer: ")
@@ -186,17 +182,13 @@ def check_users(login):
         teacher = Teacher(input("Name: "),int(input("Age: ")),"teacher",input("Gender\nmale(1)\nfemale(2): "),input(f"subjects: {subjects} choose only one: "))
         if login == "1":
             check = teacher.register_teacher()
-            if check:
-                use_bookshelf()
-            else:
+            if not check:
                 print("Wrong answer!")
                 start()
         else:
             check = teacher.login_teacher()
             print(check)
-            if check:
-                use_bookshelf()
-            else:
+            if not check:
                 print("Wrong answer!")
                 start()
 
@@ -206,21 +198,19 @@ def check_users(login):
         student = Student(input("Name: "),int(input("Age: ")),"student",input("Gender\n male(1)\n female(2): "),input(f"grade: {grades} choose only one: "))
         if login == "1":
             check = student.register_student()
-            if check:
-                use_bookshelf()
-            else:
+            if not check:
                 print("Wrong answer!")
                 start()
         else:
             check = student.login_student()
-            if check:
-                use_bookshelf()
-            else:
+            if not check:
                 print("Wrong answer!")
                 start()
     else:
         print("Wrong answer!")
         start()
+    
+    use_bookshelf()
 
 
 def start():
@@ -237,6 +227,7 @@ def start():
 
 def main():
     start()
+
 
 if __name__ == "__main__":
     main()
