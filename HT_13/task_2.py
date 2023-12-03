@@ -143,17 +143,20 @@ def take_books_info():
     return shelf
 
 
+def work_with_books(action):
+    shelf = take_books_info()
+    if action == "1":
+        print(shelf.remove_book_in_shelf_count(int(input("Pls enter Books count: "))))
+    elif action == "2":
+        print(shelf.add_book_in_shelf_count(int(input("Pls enter Books count: "))))
+    elif action == "3":
+        print(f"Books in db: {shelf.get_count_book()}")
+
+
 def use_bookshelf():
     quest_book = input("What u want?\nTake book(1)\nPut book(2)\nFind number books(3)\nExit(4)\nAnswer: ")
-    if quest_book == "1":
-        shelf = take_books_info()
-        print(shelf.remove_book_in_shelf_count(int(input("Pls enter Books count: "))))
-    elif quest_book == "2":
-        shelf = take_books_info()
-        print(shelf.add_book_in_shelf_count(int(input("Pls enter Books count: "))))
-    elif quest_book == "3":
-        shelf = take_books_info()
-        print(f"Books in db: {shelf.get_count_book()}")
+    if quest_book in ("1","2","3"):
+        work_with_books(quest_book)
     elif quest_book == "4":
         exit()
     else:
