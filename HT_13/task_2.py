@@ -128,46 +128,31 @@ class Shelf(Book):
                 return False
 
 
+def take_books_info():
+    title = input("Books title: ")
+    author = input("Books author(write 'No' if forget)")
+    category = input("Books category(write 'No' if forget)")
+    isbn = input("Books isbn(write 'No' if forget)")
+    grade = input("Books grade(write 'No' if forget)")
+    shelf = Shelf(title,
+                  None if author == "No" else author,
+                  None if category == "No" else category,
+                  None if isbn == "No" else isbn,
+                  None if grade == "No" else grade
+                  )
+    return shelf
+
+
 def use_bookshelf():
     quest_book = input("What u want?\nTake book(1)\nPut book(2)\nFind number books(3)\nExit(4)\nAnswer: ")
     if quest_book == "1":
-        title = input("Books title: ")
-        author = input("Books author(write 'No' if forget)")
-        category = input("Books category(write 'No' if forget)")
-        isbn = input("Books isbn(write 'No' if forget)")
-        grade = input("Books grade(write 'No' if forget)")
-        shelf = Shelf(title,
-                      None if author == "No" else author,
-                      None if category == "No" else category,
-                      None if isbn == "No" else isbn,
-                      None if grade == "No" else grade
-                      )
+        shelf = take_books_info()
         print(shelf.remove_book_in_shelf_count(int(input("Pls enter Books count: "))))
     elif quest_book == "2":
-        title = input("Books title: ")
-        author = input("Books author(write 'No' if forget)")
-        category = input("Books category(write 'No' if forget)")
-        isbn = input("Books isbn(write 'No' if forget)")
-        grade = input("Books grade(write 'No' if forget)")
-        shelf = Shelf(title,
-                      None if author == "No" else author,
-                      None if category == "No" else category,
-                      None if isbn == "No" else isbn,
-                      None if grade == "No" else grade
-                      )
+        shelf = take_books_info()
         print(shelf.add_book_in_shelf_count(int(input("Pls enter Books count: "))))
     elif quest_book == "3":
-        title = input("Books title: ")
-        author = input("Books author(write 'No' if forget)")
-        category = input("Books category(write 'No' if forget)")
-        isbn = input("Books isbn(write 'No' if forget)")
-        grade = input("Books grade(write 'No' if forget)")
-        shelf = Shelf(title,
-                      None if author == "No" else author,
-                      None if category == "No" else category,
-                      None if isbn == "No" else isbn,
-                      None if grade == "No" else grade
-                      )
+        shelf = take_books_info()
         print(f"Books in db: {shelf.get_count_book()}")
     elif quest_book == "4":
         exit()
