@@ -5,98 +5,73 @@ import requests
 import csv
 from bs4 import BeautifulSoup
 import os
-
+from urllib.parse import urljoin
 
 current_file_path = os.path.abspath(__file__)
 parent_directory = os.path.dirname(current_file_path)
 
 
-def write_csv_author_info(file_name,data):
-    if os.path.exists(file_name):
-        with open(file_name, 'a+', newline='', encoding='utf-8') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=['Title', 'Born', 'Description'])
-            writer.writerow(data)
-
-    else:
-        with open(file_name, 'w', newline='', encoding='utf-8') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=['Title', 'Born', 'Description'])
-            writer.writeheader()
-            writer.writerow(data)
+def write_in_csv_file(data):
+    with open(os.path.join(parent_directory, 'output.csv'), 'a+', newline='', encoding='utf-8') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=['Quote', 'Authors', 'Tags','Description'])
+        writer.writeheader()
+        for item in data:
+           writer.writerow(item)
 
 
-def write_csv_based_page(file_name,data):
-    if os.path.exists(file_name):
-        with open(file_name, 'a+', newline='', encoding='utf-8') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=['Text', 'Author', 'Tags'])
-            for item in data['data']:
-               writer.writerow(item)
-
-    else:
-        with open(file_name, 'w', newline='', encoding='utf-8') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=['Text', 'Author', 'Tags'])
-            writer.writeheader()
-            for item in data['data']:
-                writer.writerow(item)
 
 
-def take_authors(pages = 10):
-    authors = []
-    authors_links = []
-    for page in range(1,pages+1):
-        url = f"http://quotes.toscrape.com/page/{page}/"
-        response = requests.get(url)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.content, 'lxml')
-            for block in soup.select("div.quote"):
-                author = block.select("span")[-1].select_one('a')["href"]
-                if author.split('/')[-1] not in authors:
-                    authors.append(author.split('/')[-1])
-                    authors_links.append({"Author":author.split('/')[-1], "Link":author})
-
-    return authors_links
-        
-
-def take_info_about_authors(data):
-    for author in data:
-        url = f"http://quotes.toscrape.com{author['Link']}"
-        response = requests.get(url)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.content, 'lxml')
-            title = soup.select_one("h3.author-title").text
-            born_date = soup.select_one("span.author-born-date").text
-            born_location = soup.select_one("span.author-born-location").text
-            description = (soup.select_one("div.author-description").text).lstrip()
-            write_csv_author_info(os.path.join(parent_directory, 'author_info.csv'),{"Title":title, "Born" : born_date +" "+ born_location,"Description":repr(description)})
-
-
-def pars_page(page=1):
-    data = {"page" : page,"data" : []}
-    url = f"http://quotes.toscrape.com/page/{page}/"
-    response = requests.get(url)
+def take_description_pages(url,):
+    start_url = "http://quotes.toscrape.com"
+    response = requests.get(urljoin(start_url,url))
     if response.status_code == 200:
-        soup = BeautifulSoup(response.content, 'lxml')
-        find_block = soup.select("div.quote")
-        data_blocks = []
-        for block in find_block:
-            #Основний тектс
-            span_based_text = block.select_one("span.text").text.replace('“','"').replace('”','"')
-            #Автор
-            span_author = block.select_one("small.author").text
-            div_tags = block.select_one("div.tags")
-            #Список тегів
-            tags = [i.text for i in div_tags.select('a')]
-            data_blocks.append({"Text": span_based_text, "Author" : span_author, "Tags" : ','.join(tags)})
-        data["data"] = data_blocks
-        write_csv_based_page(os.path.join(parent_directory, 'output.csv'),data)
+        return response.content
+
+
+def pars_description_pages(response):
+    soup = BeautifulSoup(response, 'lxml')
+    born_date = soup.select_one("span.author-born-date").text
+    born_location = soup.select_one("span.author-born-location").text
+    description = (soup.select_one("div.author-description").text).lstrip()
+    return born_date + " " + born_location + repr(description)
+
+
+def pars_pages(response,data = []):
+    data_authors = {"Link" : [], "Description" : []}
+    soup = BeautifulSoup(response.content, 'lxml')
+    div_blocks = soup.select("div.quote")
+    for div_block in div_blocks:
+        quote = div_block.select_one("span.text").text.replace('“','"').replace('”','"')
+        authors = div_block.select_one("small.author").text
+        authors_link = div_block.select_one("span:not([class]) a")["href"]
+        tags = [_.text for _ in div_block.select("a.tag")]
+        if authors_link not in data_authors["Link"]:
+            data_authors["Link"].append(authors_link)
+            data_authors["Description"].append(pars_description_pages(take_description_pages(authors_link)))
+        description = data_authors["Description"][data_authors["Link"].index(authors_link)]
+
+        data.append({"Quote": quote,"Authors": authors,"Tags": tags,"Description" : description})
+    
+    next_page = soup.select_one("li.next a")
+    if next_page:
+        return next_page["href"],data
     else:
-        print("Something wrong")
+        return None,data
 
 
-def main():
-    for page in range(1,11):
-        pars_page(page)
-    take_info_about_authors(take_authors())
 
+def take_based_pages(url = None,page = 1,data = None):
+    if url is None:
+        url = "http://quotes.toscrape.com/"
+    if page != 11:
+        response = requests.get(url)
+        if response.status_code == 200:
+            page_link,data = pars_pages(response)
+            next_page = urljoin("http://quotes.toscrape.com/",page_link)
+            print(page,url)
+            take_based_pages(url = next_page,page=page+1,data = data)
+    else:
+        write_in_csv_file(data)
 
-if __name__ == "__main__":
-    main()
+take_based_pages()
+        
