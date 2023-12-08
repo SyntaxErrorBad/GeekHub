@@ -9,10 +9,10 @@ import requests
 
 def is_valid_date(date):
     try:
-        datetime.datetime.strptime(date, "%d.%m.%Y")
+        current_date = datetime.datetime.strptime(date, "%d.%m.%Y").date().strftime("%d.%m.%Y")
         today = datetime.datetime.now().date().strftime("%d.%m.%Y")
-        if today >= date:
-            return True, date
+        if today >= current_date:
+            return True, current_date
         return False, None
     except Exception as e:
         return False, e
