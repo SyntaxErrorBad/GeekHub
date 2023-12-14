@@ -75,6 +75,7 @@ def get_products_by_category_page(category_id,url = None,count = 0):
 
 
     for item in range(1,count,48):
+        print(f"Current items between {count} and {count + 47}"
         url = (f'https://www.sears.com/api/sal/v3/products/search?startIndex={str(item)}&endIndex={str(item+47)}&searchType='
                 f'category&catalogId=12605&store=Sears&storeId=10153&zipCode=10101&bratRedirectInd=true&cat'
                 f'PredictionInd=true&disableBundleInd=true&filterValueLimit=500&includeFiltersInd=true&shipOr'
