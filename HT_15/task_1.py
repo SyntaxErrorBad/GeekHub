@@ -14,8 +14,33 @@ def write_data_to_csv(data, category_id):
         for dt in data:
             writer.writerow(dt)
 
+def param(start=1,end = 1):
+    params = {
+        f'startIndex': {start},
+        f'endIndex': {end},
+        'searchType': 'category',
+        'catalogId': 12605,
+        'store': 'Sears',
+        'storeId': 10153,
+        'zipCode': 10101,
+        'bratRedirectInd': True,
+        'catPredictionInd': True,
+        'disableBundleInd': True,
+        'filterValueLimit': 500,
+        'includeFiltersInd': True,
+        'shipOrDelivery': True,
+        'solrxcatRedirection': True,
+        'sortBy': 'ORIGINAL_SORT_ORDER',
+        'whiteListCacheLoad': False,
+        'eagerCacheLoad': True,
+        'slimResponseInd': True,
+        'catGroupId': 1025184,
+        'seoURLPath': 'tools-tool-storage/1025184',
+    }
+    return params
 
-def get_products_by_category_page(category_id,url = None,count = 0):
+
+def get_products_by_category_page(category_id):
     cookies = {
         '__cf_bm': 'zNqVBwj2HKPqp00S6eGD1mbyjefAlyzdWJxStAoCmLc-1702062572-1-'
                    'AZLYiXDX1iYf8jJCMbim18B9uW8Q213bluEDthWFbCF5hR9/CFjxnEWNlw'
@@ -62,32 +87,17 @@ def get_products_by_category_page(category_id,url = None,count = 0):
         'Sec-GPC': '1',
     }
 
-    if url is None:
-        url = (f'https://www.sears.com/api/sal/v3/products/search?startIndex=1&endIndex=48&searchType='
-                f'category&catalogId=12605&store=Sears&storeId=10153&zipCode=10101&bratRedirectInd=true&cat'
-                f'PredictionInd=true&disableBundleInd=true&filterValueLimit=500&includeFiltersInd=true&shipOr'
-                f'Delivery=true&solrxcatRedirection=true&sortBy=ORIGINAL_SORT_ORDER&whiteListCacheLoad=false&eager'
-                f'CacheLoad=true&slimResponseInd=true&catGroupId={category_id}&seoURLPath=category/{category_id}')
-        
-        response = requests.get(url,cookies=cookies,headers=headers)
-        count = response.json()["metadata"]["count"]
-        get_products_by_category_page(category_id,url=url,count=count)
+    url = "https://www.sears.com/api/sal/v3/products/search"
+    
+    response_counts = requests.get(url,cookies=cookies,headers=headers,params=param())
+    count = int(response_counts.json()["metadata"]["count"])
 
+    response = requests.get(url,cookies=cookies,headers=headers,params=param(end=count))
+    if response.status_code == 200:
+        take_data_from_json_to_dict(response, id)
+    else:
+        print(f"Виникла помилка спробуйте знову! {response.status_code}")
 
-    for item in range(1,count,48):
-        print(f"Current items between {count} and {count + 47}"
-        url = (f'https://www.sears.com/api/sal/v3/products/search?startIndex={str(item)}&endIndex={str(item+47)}&searchType='
-                f'category&catalogId=12605&store=Sears&storeId=10153&zipCode=10101&bratRedirectInd=true&cat'
-                f'PredictionInd=true&disableBundleInd=true&filterValueLimit=500&includeFiltersInd=true&shipOr'
-                f'Delivery=true&solrxcatRedirection=true&sortBy=ORIGINAL_SORT_ORDER&whiteListCacheLoad=false&eager'
-                f'CacheLoad=true&slimResponseInd=true&catGroupId={category_id}&seoURLPath=category/{category_id}')
-
-        response = requests.get(url,cookies=cookies,headers=headers)
-
-        if response.status_code == 200:
-            take_data_from_json_to_dict(response, id)
-        else:
-            print(f"Виникла помилка спробуйте знову! {response.status_code}")
 
 def take_data_from_json_to_dict(response, category_id):
     data = []
@@ -104,3 +114,5 @@ def take_data_from_json_to_dict(response, category_id):
 
 
 get_products_by_category_page(input("Введіть ID(лише цифри): "))
+
+#https://www.sears.com/api/sal/v3/products/search?startIndex=1&endIndex=48&searchType=category&catalogId=12605&store=Sears&storeId=10153&zipCode=10101&bratRedirectInd=true&catPredictionInd=true&disableBundleInd=true&filterValueLimit=500&includeFiltersInd=true&shipOrDelivery=true&solrxcatRedirection=true&sortBy=ORIGINAL_SORT_ORDER&whiteListCacheLoad=false&eagerCacheLoad=true&slimResponseInd=true&catGroupId=1025184&seoURLPath=tools-tool-storage/1025184
