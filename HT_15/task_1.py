@@ -15,7 +15,7 @@ def write_data_to_csv(data, category_id):
             writer.writerow(dt)
 
 
-def get_products_by_category_page(category_id):
+def get_products_by_category_page(category_id,url = None,count = 0):
     cookies = {
         '__cf_bm': 'zNqVBwj2HKPqp00S6eGD1mbyjefAlyzdWJxStAoCmLc-1702062572-1-'
                    'AZLYiXDX1iYf8jJCMbim18B9uW8Q213bluEDthWFbCF5hR9/CFjxnEWNlw'
@@ -62,20 +62,31 @@ def get_products_by_category_page(category_id):
         'Sec-GPC': '1',
     }
 
-    response = requests.get(
-        f'https://www.sears.com/api/sal/v3/products/search?startIndex=1&endIndex=48&searchType='
-        f'category&catalogId=12605&store=Sears&storeId=10153&zipCode=10101&bratRedirectInd=true&cat'
-        f'PredictionInd=true&disableBundleInd=true&filterValueLimit=500&includeFiltersInd=true&shipOr'
-        f'Delivery=true&solrxcatRedirection=true&sortBy=ORIGINAL_SORT_ORDER&whiteListCacheLoad=false&eager'
-        f'CacheLoad=true&slimResponseInd=true&catGroupId={category_id}&seoURLPath=category/{category_id}',
-        cookies=cookies,
-        headers=headers,
-    )
-    if response.status_code == 200:
-        take_data_from_json_to_dict(response, id)
-    else:
-        print("Виникла помилка спробуйте знову!")
+    if url is None:
+        url = (f'https://www.sears.com/api/sal/v3/products/search?startIndex=1&endIndex=48&searchType='
+                f'category&catalogId=12605&store=Sears&storeId=10153&zipCode=10101&bratRedirectInd=true&cat'
+                f'PredictionInd=true&disableBundleInd=true&filterValueLimit=500&includeFiltersInd=true&shipOr'
+                f'Delivery=true&solrxcatRedirection=true&sortBy=ORIGINAL_SORT_ORDER&whiteListCacheLoad=false&eager'
+                f'CacheLoad=true&slimResponseInd=true&catGroupId={category_id}&seoURLPath=category/{category_id}')
+        
+        response = requests.get(url,cookies=cookies,headers=headers)
+        count = response.json()["metadata"]["count"]
+        get_products_by_category_page(category_id,url=url,count=count)
 
+
+    for item in range(1,count,48):
+        url = (f'https://www.sears.com/api/sal/v3/products/search?startIndex={str(item)}&endIndex={str(item+47)}&searchType='
+                f'category&catalogId=12605&store=Sears&storeId=10153&zipCode=10101&bratRedirectInd=true&cat'
+                f'PredictionInd=true&disableBundleInd=true&filterValueLimit=500&includeFiltersInd=true&shipOr'
+                f'Delivery=true&solrxcatRedirection=true&sortBy=ORIGINAL_SORT_ORDER&whiteListCacheLoad=false&eager'
+                f'CacheLoad=true&slimResponseInd=true&catGroupId={category_id}&seoURLPath=category/{category_id}')
+
+        response = requests.get(url,cookies=cookies,headers=headers)
+
+        if response.status_code == 200:
+            take_data_from_json_to_dict(response, id)
+        else:
+            print(f"Виникла помилка спробуйте знову! {response.status_code}")
 
 def take_data_from_json_to_dict(response, category_id):
     data = []
