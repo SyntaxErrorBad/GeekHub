@@ -1,47 +1,12 @@
 import requests
 import csv
 import os
-
+import time
 
 current_file_path = os.path.abspath(__file__)
 parent_directory = os.path.dirname(current_file_path)
 
-
-def write_data_to_csv(data, category_id):
-    with open(os.path.join(parent_directory, f'{category_id}.csv'), "w", newline='', encoding='utf-8') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=data[0].keys())
-        writer.writeheader()
-        for dt in data:
-            writer.writerow(dt)
-
-def param(start=1,end = 1):
-    params = {
-        f'startIndex': {start},
-        f'endIndex': {end},
-        'searchType': 'category',
-        'catalogId': 12605,
-        'store': 'Sears',
-        'storeId': 10153,
-        'zipCode': 10101,
-        'bratRedirectInd': True,
-        'catPredictionInd': True,
-        'disableBundleInd': True,
-        'filterValueLimit': 500,
-        'includeFiltersInd': True,
-        'shipOrDelivery': True,
-        'solrxcatRedirection': True,
-        'sortBy': 'ORIGINAL_SORT_ORDER',
-        'whiteListCacheLoad': False,
-        'eagerCacheLoad': True,
-        'slimResponseInd': True,
-        'catGroupId': 1025184,
-        'seoURLPath': 'tools-tool-storage/1025184',
-    }
-    return params
-
-
-def get_products_by_category_page(category_id):
-    cookies = {
+cookies = {
         '__cf_bm': 'zNqVBwj2HKPqp00S6eGD1mbyjefAlyzdWJxStAoCmLc-1702062572-1-'
                    'AZLYiXDX1iYf8jJCMbim18B9uW8Q213bluEDthWFbCF5hR9/CFjxnEWNlw'
                    'PsSiibwOr1A1/Z/sddC/lZXUTu0CeP+o7tnaeU1UJtPB51L7Jy',
@@ -72,11 +37,38 @@ def get_products_by_category_page(category_id):
         'ftr_ncd': '6',
     }
 
+
+def params(category_id,start_id = 1,end_id = 48):
+    params = {
+        'startIndex': str(start_id),
+        'endIndex': str(end_id),
+        'searchType': 'category',
+        'catalogId': 12605,
+        'store': 'Sears',
+        'storeId': 10153,
+        'zipCode': 10101,
+        'bratRedirectInd': True,
+        'catPredictionInd': True,
+        'disableBundleInd': True,
+        'filterValueLimit': 500,
+        'includeFiltersInd': True,
+        'shipOrDelivery': True,
+        'solrxcatRedirection': True,
+        'sortBy': 'ORIGINAL_SORT_ORDER',
+        'whiteListCacheLoad': False,
+        'eagerCacheLoad': True,
+        'slimResponseInd': True,
+        'catGroupId': category_id,
+        'seoURLPath': f'tools-tool-storage/{str(category_id)}',
+    }
+    return params
+
+def take_page_from_website(category_id):
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0',
+        'User-Agent': 'Mozilla/5.0 (Linux; U; Linux i585 x86_64; en-US) Gecko/20100101 Firefox/51.2',
         'Accept': 'application/json, text/plain, */*',
         'Accept-Language': 'ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
-        f'Referer': 'https://www.sears.com/category/b-{id}',
+        'Referer': f'https://www.sears.com/category/b-{category_id}',
         'Content-Type': 'application/json',
         'Authorization': 'SEARS',
         'Alt-Used': 'www.sears.com',
@@ -87,16 +79,44 @@ def get_products_by_category_page(category_id):
         'Sec-GPC': '1',
     }
 
-    url = "https://www.sears.com/api/sal/v3/products/search"
-    
-    response_counts = requests.get(url,cookies=cookies,headers=headers,params=param())
-    count = int(response_counts.json()["metadata"]["count"])
 
-    response = requests.get(url,cookies=cookies,headers=headers,params=param(end=count))
-    if response.status_code == 200:
-        take_data_from_json_to_dict(response, id)
+
+    url = "https://www.sears.com/api/sal/v3/products/search"
+    offset_new = 48
+    limit_new = 1
+    response_json_items = [""]
+    while len(response_json_items) != 0:
+        response = requests.get(url,cookies=cookies,headers=headers,params=params(category_id=category_id,start_id=limit_new,end_id=offset_new))
+        if response.status_code == 200:
+            response_json_items = response.json()["items"]
+            offset_new = int(response.json()["metadata"]["offset"]) + len(response_json_items)
+            limit_new = int(response.json()["metadata"]["limit"]) + len(response_json_items)
+            take_data_from_json_to_dict(response,category_id)
+            time.sleep(1)
+            print(f"start index of items: {limit_new}")
+
+        elif response.status_code == 504:
+            print(f"Responce: {response.status_code}")
+            time.sleep(1)
+        else:
+            print(f"Виникла помилка {response.status_code}")
+            response_json_items = []
+            
+
+def write_data_to_csv(data, category_id):
+    file_name = os.path.join(parent_directory, f'{category_id}.csv')
+    if os.path.exists(file_name):
+        with open(file_name, 'a+', newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=data[0].keys())
+            for dt in data:
+                writer.writerow(dt)
+
     else:
-        print(f"Виникла помилка спробуйте знову! {response.status_code}")
+        with open(file_name, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=data[0].keys())
+            writer.writeheader()
+            for dt in data:
+                writer.writerow(dt)
 
 
 def take_data_from_json_to_dict(response, category_id):
@@ -110,9 +130,7 @@ def take_data_from_json_to_dict(response, category_id):
         data.append({"Brand": brand, "Name": name, "RegularPrice": regularprice, "FinalPrice": finalprice,
                      "Category": category})
 
-    write_data_to_csv(data, category_id)
+    write_data_to_csv(data, category_id)              
 
 
-get_products_by_category_page(input("Введіть ID(лише цифри): "))
-
-#https://www.sears.com/api/sal/v3/products/search?startIndex=1&endIndex=48&searchType=category&catalogId=12605&store=Sears&storeId=10153&zipCode=10101&bratRedirectInd=true&catPredictionInd=true&disableBundleInd=true&filterValueLimit=500&includeFiltersInd=true&shipOrDelivery=true&solrxcatRedirection=true&sortBy=ORIGINAL_SORT_ORDER&whiteListCacheLoad=false&eagerCacheLoad=true&slimResponseInd=true&catGroupId=1025184&seoURLPath=tools-tool-storage/1025184
+take_page_from_website(input("Введіть ID(лише цифри): "))
