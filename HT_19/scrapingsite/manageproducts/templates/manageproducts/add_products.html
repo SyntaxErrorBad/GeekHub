@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Products</title>
+</head>
+<body>
+    <p><a href="{% url 'my_products' %}">Go To My Products</a></p>
+    <hr>
+    <form method="post" action="{% url 'add_products' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Add Products">
+    </form>
+</body>
+</html>

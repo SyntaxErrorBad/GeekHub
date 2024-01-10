@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shopping Cart</title>
+</head>
+<body>
+    <p><a href="{% url 'my_products' %}">Go To My Products</a></p>
+    <p><a href="{% url 'add_products' %}">Go To Add Products</a></p>
+    <p><a href="{% url 'clear_all_cart' %}">Clear All Cart</a></p>
+    <hr>
+    {% load custom_filters %}
+    {% for product in products %}
+        {% with product_data=product.ID|get_product_data %}
+            <p><img src="{{ product_data.img }}" style="
+            width: 150px;
+            height: 100px;
+            border: 2px solid black;
+            border-radius: 15px;
+            ">
+            </p>
+            <p>ID: {{ product_data.product_id }}</p>
+            <p>Name: {{ product_data.name }}</p>
+            <p>Price: {{ product_data.price }}</p>
+            <p>The amount you have chosen: {{product.Count}}</p>
+            <p>Finish price: {{ product_data.price|get_multiply:product.Count|floatformat:2 }}</p>
+            <p><a href="{% url 'product_detail' product_data.product_id %}">Link To Other Detail</a></p>
+            <p><a href="{% url 'shopping_cart_remove_item' product_data.product_id %}">Delete from Shopping Cart</a></p>
+            <hr>
+        {% endwith %}
+    {% endfor %}
+</body>
+</html>

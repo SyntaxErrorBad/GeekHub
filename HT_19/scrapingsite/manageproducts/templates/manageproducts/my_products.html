@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Products</title>
+</head>
+<body>
+    <p><a href="{% url 'shopping_cart_page' %}">Go To My Shopping Cart</a></p>
+    <p><a href="{% url 'add_products' %}">Go To Add Products</a></p>
+    <hr>
+    {% for product in products %}
+        <p><img src="{{ product.img }}" style="
+            width: 150px;
+            height: 100px;
+            border: 2px solid black;
+            border-radius: 15px;
+        ">
+        </p>
+        <p><a href="{% url 'product_detail' product.product_id %}">{{ product.name }}</a> - Price: {{ product.price }}</p>
+        <a href="{% url 'shopping_cart_remove_item' product.product_id %}"
+        {% for shopping_item in request.session.shopping_cart%}
+            {% if product.product_id in shopping_item.ID %}
+                style="background-color: green;"
+            {% endif %}
+        {% endfor %}>In Cart</a>
+        <hr>
+    {% endfor %}
+</body>
+</html>
