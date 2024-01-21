@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Products Detail</title>
+</head>
+<body>
+    {% include 'admin/header.html' %}
+    <a href="{% url 'my_products' %}">Go to My Products</a>
+    {% if user.is_superuser %}
+        <p><a href="{% url 'add_products' %}">Go To Add Products</a></p>
+    {% endif %}
+
+    <h2>{{ product.name }}</h2>
+    <p><img src="{{ product.img }}" style="
+            width: 150px;
+            height: 100px;
+            border: 2px solid black;
+            border-radius: 15px;
+        ">
+    </p>
+    <p>Price: {{ product.price }}</p>
+    <p>ID: {{ product.product_id }}</p>
+    <p>Short Description: {{ product.description }}</p>
+    <p>Brand: {{ product.brand }}</p>
+    <p>Category: {{ product.category }}</p>
+    <p><a href="{{ product.sears_link }}" target="_blank">Link To Sears</a></p>
+    {% if user.is_superuser %}
+        <p><a href="{% url 'changeinfoproduct' product_id=product.product_id %}">Change Product Info</a></p>
+    {% endif %}
+</body>
+</html>
