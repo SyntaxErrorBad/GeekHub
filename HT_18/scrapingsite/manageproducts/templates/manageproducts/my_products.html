@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Products</title>
+</head>
+<body>
+    {% for product in products %}
+        <p><a href="{% url 'product_detail' product.product_id %}">{{ product.name }}</a> - Ціна: {{ product.price }}</p>
+    {% endfor %}
+</body>
+</html>
