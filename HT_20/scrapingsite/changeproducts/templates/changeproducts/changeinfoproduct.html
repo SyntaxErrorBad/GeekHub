@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    {% include 'admin/header.html' %}
+    <p><a href="{% url 'my_products' %}">Go To My Products</a></p>
+    <h2>Edit Product: {{ product.name }}</h2>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+        {% for field in form %}
+            <div>
+            {{ field.label_tag }}
+            <input type="{{ field.widget.input_type }}" name="{{ field.name }}" value="{{ field.value|default:'' }}" size="{{ field.value|length }}" />
+            </div>
+        {% endfor %}
+        <button type="submit" name="action" value="update">Save changes</button>
+        <button type="submit" name="action" value="delete">Delete</button>
+        <button type="submit" name="action" value="refresh">Updata By Basic Site</button>
+    </form>
+    <p><a href="{% url 'product_detail' product_id=product.product_id %}">Return To Product Detail</a></p>
+</body>
+</html>
