@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shopping Cart</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+</head>
+<body>
+    {% include 'admin/header.html' %}
+    <p><a href="{% url 'my_products' %}">Go To My Products</a></p>
+    {% if user.is_superuser %}
+        <p><a href="{% url 'add_products' %}">Go To Add Products</a></p>
+    {% endif %}
+    <!-- <p><a href="{% url 'clear_all_cart' %}">Clear All Cart</a></p> -->
+    <button id="clear_cart">Clear All Cart</button>
+    <hr>
+    {% load custom_filters %}
+    {% for product in products %}
+    <div class="product" data-product-id="{{ product.ID }}">
+        {% with product_data=product.ID|get_product_data %}
+            <p><img src="{{ product_data.img }}" style="
+            width: 150px;
+            height: 100px;
+            border: 2px solid black;
+            border-radius: 15px;
+            ">
+            </p>
+            <p>ID: {{ product_data.product_id }}</p>
+            <p>Name: {{ product_data.name }}</p>
+            <p>Price: <span class="price" data-product-id="{{ product_data.product_id }}" >{{ product_data.price }}</span></p>
+            <p>
+                {% csrf_token %}
+                The amount you have chosen in cart:
+                <button type="submit" name="operation" value="add|{{ product_data.product_id }}">Add 1 Item</button>
+                <span class="count_product" data-product-id="{{ product_data.product_id }}">{{product.Count}}</span>
+                <button type="submit" name="operation" value="remove|{{ product_data.product_id }}">Remove 1 Item</button>
+            </p>
+            <p>Finish price: <span class="finish_price" data-product-id="{{ product_data.product_id }}">{{ product_data.price|get_multiply:product.Count|floatformat:2 }}</span></p>
+            <p><a href="{% url 'product_detail' product_data.product_id %}">Link To Other Detail</a></p>
+            <button class="delete_from_cart" value="{{ product_data.product_id }}">Delete from Cart</button>
+            <hr>
+        {% endwith %}
+    </div>
+    {% endfor %}
+
+    <script>
+        $(document).ready(function(){
+            $('button[name="operation"]').on('click', function(){
+                var button = $(this)
+                var value = button.attr("value");
+                var csrftoken = $('[name=csrfmiddlewaretoken]').val();
+
+                var [operation, product_id_] = value.split('|')
+
+
+                if (operation === "add"){
+                    api_url = "{% url 'api-products:shopping-cart-add-quantity-api' %}";
+                } else {
+                    api_url = "{% url 'api-products:shopping-cart-remove-quantity-api' %}";
+                }
+
+                $.ajax({
+                    url: api_url,
+                    method: "POST",
+                    dataType: "json",
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    data: {product_id: product_id_},
+                    success: function(result){
+                        var span_count_obj = document.querySelector(`.count_product[data-product-id="${product_id_}"]`);
+                        var count_span = parseInt(span_count_obj.textContent, 10);
+
+                        if (operation === "add") {
+                            span_count_obj.textContent = count_span + 1
+                        } else {
+                            span_count_obj.textContent = count_span - 1
+                        }
+
+                        var take_product_price = document.querySelector(`.price[data-product-id="${product_id_}"]`);
+                        var product_finish_price = document.querySelector(`.finish_price[data-product-id="${product_id_}"]`);
+
+                        product_finish_price.textContent = parseFloat(take_product_price.textContent) * parseInt(span_count_obj.textContent,10)
+
+                    }
+                })
+            })
+        })
+
+    </script>
+
+    <script>
+        $(document).ready(function(){
+            $(".delete_from_cart").on("click", function(){
+                var csrftoken = $('[name=csrfmiddlewaretoken]').val();
+                var button = $(this)
+                var product_id_ = button.attr("value")
+
+
+                $.ajax({
+                    url: "{% url 'api-products:shopping-cart-remove-api' %}",
+                    method: "POST",
+                    dataType: "json",
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    data: {product_id: product_id_},
+                    success: function(result) {
+                        var product_div = document.querySelector(`.product[data-product-id="${product_id_}"]`);
+
+                        if (product_div){
+                            product_div.remove()
+                        } else {
+                            location.reload();
+                        }
+                    }
+                })
+            })
+        })
+
+    </script>
+
+    <script>
+        $(document).ready(function(){
+
+            var csrftoken = $('[name=csrfmiddlewaretoken]').val();
+
+            $("#clear_cart").on("click", function(){
+                $.ajax({
+                    url: "{% url 'api-products:shopping-cart-clear' %}",
+                    method: "POST",
+                    dataType: "json",
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    success: function(result) {
+                        $(".product").remove()
+                    }
+                })
+            })
+        })
+    </script>
+
+</body>
+</html>

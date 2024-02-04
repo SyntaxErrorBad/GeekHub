@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Products</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+</head>
+<body>
+    {% include 'admin/header.html' %}
+    <p><a href="{% url 'shopping_cart_page' %}">Go To My Shopping Cart</a></p>
+
+
+    {% if user.is_superuser %}
+        <p><a href="{% url 'add_products' %}">Go To Add Products</a></p>
+    {% endif %}
+
+    <h2>Category List</h2>
+    <ul>
+        {% for category in categories %}
+        <li><a href="{% url 'category_product' category=category %}">{{ category }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <hr>
+    
+    {% for product in products %}
+        <p><img src="{{ product.img }}" style="
+            width: 150px;
+            height: 100px;
+            border: 2px solid black;
+            border-radius: 15px;
+        ">
+        </p>
+        <p><a href="{% url 'product_detail' product.product_id %}">{{ product.name }}</a> - Price: {{ product.price }}</p>
+
+
+        {% if user.is_authenticated %}
+            {% csrf_token %}
+            <button class="url_button" data-product-id="{{ product.product_id }}" style="background: lightgrey;">In Cart</button>
+        {% endif %}
+
+        <hr>
+    {% endfor %}
+
+    <script>
+        $(document).ready(function() {
+            var shoppingCartData = {{ request.session.shopping_cart|safe  }};
+            var buttons = document.querySelectorAll('.url_button');
+            buttons.forEach(function(button) {
+                var buttonProductId = button.getAttribute('data-product-id');
+
+                if (CheckInListData(buttonProductId)) {
+                    button.style.background = "green";
+                }
+                
+            }); 
+        
+            function CheckInListData(product_id_data) {
+                return shoppingCartData.some(function(dict){
+                    return Object.values(dict).includes(product_id_data)
+                })
+            }    
+
+        })
+    </script>
+
+
+    <script>
+        $(document).ready(function() {
+
+            $(".url_button").on("click", function() {
+                var button = $(this)
+                
+                var product_id_ = $(this).attr("data-product-id")
+                var csrftoken = $('[name=csrfmiddlewaretoken]').val();
+
+                $.ajax({
+                    url: "{% url 'api-products:shopping-cart' %}",
+                    method: "POST",
+                    dataType: "json",
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    data: {product_id: product_id_},
+                    success: function(result) {
+                        if (result.InCart === true) {
+                            button.css("background", "green");
+                        } else {
+                            button.css("background", "lightgrey");
+                        }
+                    },
+                })
+            })
+
+        })
+
+    </script>
+
+   
+
+</body>
+</html>

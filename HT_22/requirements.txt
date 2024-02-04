@@ -1,0 +1,8 @@
+django_filter==23.5
+Markdown==3.5.2
+djangorestframework==3.14.0
+pydantic_settings==2.1.0
+redis==5.0.1
+requests==2.31.0
+celery==5.3.6
+django==5.0.1
