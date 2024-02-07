@@ -7,4 +7,4 @@ services:
       - "6379:6379"
     volumes:
       - ./redis-data:/data
-    command: ["redis-server", "--appendonly", "yes"]
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "your_secret_key_for_redis"]

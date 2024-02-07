@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-import os
 
 from .config import redis_settings
 
@@ -34,13 +33,15 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
+
     'manageproducts.apps.ManageproductsConfig',
     'scraper.apps.ScraperConfig',
     'shopping_cart.apps.ShoppingCartConfig',
@@ -168,5 +169,5 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-CELERY_BROKER_URL = f"redis://{redis_settings.REDIS_HOST}:{redis_settings.REDIS_PORT}/0"
-CELERY_RESULT_BACKEND = f"redis://{redis_settings.REDIS_HOST}:{redis_settings.REDIS_PORT}/0"
+CELERY_BROKER_URL = f"redis://:{redis_settings.REDIS_SECRET_KEY}@{redis_settings.REDIS_HOST}:{redis_settings.REDIS_PORT}/0"
+CELERY_RESULT_BACKEND = f"redis://:{redis_settings.REDIS_SECRET_KEY}@{redis_settings.REDIS_HOST}:{redis_settings.REDIS_PORT}/0"

@@ -8,12 +8,12 @@ from django.contrib.auth import authenticate, login, logout
 from manageproducts.models import Product
 from manageproducts.tasks import scrape_sears
 
-from .serializers.productsserializer import ProductSerializer
-from .serializers.productsserializer import ProductsCaregoriesSerializer
-from .serializers.productsserializer import ProductAddProductsSerializer
-from .serializers.loginserializer import LoginSerializer
-from .serializers.shoppingcartserializer import ShoppingCartSerializer
-from .serializers.shoppingcartserializer import ShoppingCartRemoveSerializer
+from .serializers.products import ProductSerializer
+from .serializers.products import ProductsCaregoriesSerializer
+from .serializers.products import ProductAddProductsSerializer
+from .serializers.login import LoginSerializer
+from .serializers.shopping_cart import ShoppingCartSerializer
+from .serializers.shopping_cart import ShoppingCartRemoveSerializer
 
 
 class ProductListAPIView(generics.ListAPIView):
@@ -73,8 +73,10 @@ class LoginUserAPIView(APIView):
                 content = {
                     'message': 'Wrong user or something'
                 }
-
+        else:
+            content = {'message': 'Data is invalid'}
         return Response(content)
+
 
 
 class LogoutUserAPIView(APIView):
@@ -99,7 +101,6 @@ class ShoppingCartAddOrRemoveItemAPIView(APIView):
         if serializer.is_valid():
             product_id = serializer.validated_data['product_id']
             shopping_cart = request.session.get('shopping_cart')
-            print(shopping_cart)
             if not shopping_cart:
                 shopping_cart.append({
                     "ID": product_id,
@@ -120,9 +121,10 @@ class ShoppingCartAddOrRemoveItemAPIView(APIView):
                         "Count": 1
                     })
 
-        print(shopping_cart)
-        request.session['shopping_cart'] = shopping_cart
-        return Response({"InCart": product_in_cart})
+            request.session['shopping_cart'] = shopping_cart
+            return Response({"InCart": product_in_cart})
+        else:
+            return Response({'message': 'Data is invalid'})
 
 
 
