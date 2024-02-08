@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <title>My Products</title>
 
+    {% load static %}
+
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="{% static '/js/operation_with_cart.js' %}"></script>
+
 </head>
 <body>
     {% include 'admin/header.html' %}
@@ -37,67 +41,18 @@
 
         {% if user.is_authenticated %}
             {% csrf_token %}
-            <button class="url_button" data-product-id="{{ product.product_id }}" style="background: lightgrey;">In Cart</button>
+            <button class="url_button" data-product-id="{{ product.product_id }}" 
+                {% for shopping_item in request.session.shopping_cart%}
+                    {% if product.product_id in shopping_item.ID %}
+                        style="background: green;"
+                    {% else %}
+                        style="background: lightgrey;"
+                    {% endif %}
+                    {% endfor %}
+                    data-value-url="{% url 'api-products:shopping-cart' %}">In Cart</button>
         {% endif %}
 
         <hr>
     {% endfor %}
-
-    <script>
-        $(document).ready(function() {
-            var shoppingCartData = {{ request.session.shopping_cart|safe  }};
-            var buttons = document.querySelectorAll('.url_button');
-            buttons.forEach(function(button) {
-                var buttonProductId = button.getAttribute('data-product-id');
-
-                if (CheckInListData(buttonProductId)) {
-                    button.style.background = "green";
-                }
-                
-            }); 
-        
-            function CheckInListData(product_id_data) {
-                return shoppingCartData.some(function(dict){
-                    return Object.values(dict).includes(product_id_data)
-                })
-            }    
-
-        })
-    </script>
-
-
-    <script>
-        $(document).ready(function() {
-
-            $(".url_button").on("click", function() {
-                var button = $(this)
-                
-                var product_id_ = $(this).attr("data-product-id")
-                var csrftoken = $('[name=csrfmiddlewaretoken]').val();
-
-                $.ajax({
-                    url: "{% url 'api-products:shopping-cart' %}",
-                    method: "POST",
-                    dataType: "json",
-                    headers: {
-                        'X-CSRFToken': csrftoken
-                    },
-                    data: {product_id: product_id_},
-                    success: function(result) {
-                        if (result.InCart === true) {
-                            button.css("background", "green");
-                        } else {
-                            button.css("background", "lightgrey");
-                        }
-                    },
-                })
-            })
-
-        })
-
-    </script>
-
-   
-
 </body>
 </html>

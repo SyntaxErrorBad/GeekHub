@@ -26,7 +26,7 @@ api = [
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('manage-products/', include('manageproducts.urls')),
+    path('', include('manageproducts.urls')),
     path('shopping-cart/', include('shopping_cart.urls')),
     path('', include('userlogin.urls')),
     path('', include('changeproducts.urls')),
