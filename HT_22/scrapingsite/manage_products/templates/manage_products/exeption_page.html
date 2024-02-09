@@ -1,0 +1,17 @@
+{% extends 'admin/main_template.html' %}
+
+{% block title %}
+    Exception Page
+{% endblock %}
+
+{% block body_content %}
+    Unfortunately, this product was not saved or something went wrong
+    <ul>
+        <li>
+            <a href="{% url 'add_products' %}">Add Products</a>
+        </li>
+        <li>
+            <a href="{% url 'my_products' %}">My Products</a>
+        </li>
+    </ul>
+{% endblock %}

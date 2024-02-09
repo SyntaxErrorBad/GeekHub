@@ -1,5 +1,5 @@
 from django import template
-from manageproducts.models import Product
+from manage_products.models import Product
 
 register = template.Library()
 

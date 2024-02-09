@@ -14,7 +14,7 @@ def scrape_product_info(product_id):
         headers=headers,
     )
     try:
-        products = response.json()["productDetail"]["softhardProductdetails"][0]
+        products = response.json()['productDetail']['softhardProductdetails'][0]
         product_info = {
             'product_id': product_id,
             'name': products['descriptionName'],
@@ -22,12 +22,12 @@ def scrape_product_info(product_id):
             'description': products['topDescription'],
             'brand': products['brandName'],
             'category': ','.join([i['name'] for i in products['hierarchies']['specificHierarchy']]),
-            'sears_link': urljoin("https://www.sears.com/", products['seoUrl']),
+            'sears_link': urljoin('https://www.sears.com/', products['seoUrl']),
             'img': products['mainImageUrl']
         }
 
     except Exception as e:
-        logger.error(f"Function {scrape_product_info.__name__} has a problem {e}")
+        logger.error(f'Function {scrape_product_info.__name__} has a problem {e}')
         product_info = None
 
     return product_info
