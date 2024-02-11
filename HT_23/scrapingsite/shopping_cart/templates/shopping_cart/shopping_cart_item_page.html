@@ -1,0 +1,13 @@
+{% extends 'admin/main_template.html' %}
+
+{% block title %}
+    Shopping Cart Item
+{% endblock %}
+
+{% block body_content %}
+    <form method="post" action="{% url 'shopping_cart_add_item' product_id=product_id %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add to Cart</button>
+    </form>
+{% endblock %}

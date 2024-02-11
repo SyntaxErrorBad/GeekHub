@@ -1,0 +1,15 @@
+{% extends 'admin/main_template.html' %}
+
+{% block title %}
+    Add Products
+{% endblock %}
+
+{% block body_content %}
+    <p><a href="{% url 'my_products' %}">Go To My Products</a></p>
+    <hr>
+    <form method="post" action="{% url 'add_products' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Add Products">
+    </form>
+{% endblock %}
