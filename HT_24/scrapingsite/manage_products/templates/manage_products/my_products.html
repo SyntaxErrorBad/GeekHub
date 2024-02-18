@@ -1,0 +1,59 @@
+{% extends 'admin/main_template.html' %}
+
+{% block title %}
+    My Products
+{% endblock %}
+
+
+{% block additional_head %}
+    {% load static %}
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="{% static '/js/operation_with_cart.js' %}"></script>
+{% endblock %}
+
+
+{% block body_content %}
+    <p><a href="{% url 'shopping_cart_page' %}">Go To My Shopping Cart</a></p>
+
+
+    {% if user.is_superuser %}
+        <p><a href="{% url 'add_products' %}">Go To Add Products</a></p>
+    {% endif %}
+
+    <h2>Category List</h2>
+    <ul>
+        {% for category in categories %}
+        <li><a href="{% url 'category_product' category=category %}">{{ category }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <hr>
+
+    {% for product in products %}
+        <p><img src="{{ product.img }}" style="
+            width: 150px;
+            height: 100px;
+            border: 2px solid black;
+            border-radius: 15px;
+        ">
+        </p>
+        <p><a href="{% url 'product_detail' product.product_id %}">{{ product.name }}</a> - Price: {{ product.price }}</p>
+
+
+        {% if user.is_authenticated %}
+            {% csrf_token %}
+            <button class="url_button" data-product-id="{{ product.product_id }}"
+                {% for shopping_item in request.session.shopping_cart%}
+                    {% if product.product_id in shopping_item.ID %}
+                        style="background: green;"
+                    {% else %}
+                        style="background: lightgrey;"
+                    {% endif %}
+                    {% endfor %}
+                    data-value-url="{% url 'api-products:shopping-cart' %}">In Cart</button>
+        {% endif %}
+
+        <hr>
+    {% endfor %}
+{% endblock %}

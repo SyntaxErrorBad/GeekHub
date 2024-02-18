@@ -1,0 +1,22 @@
+{% extends 'admin/main_template.html' %}
+
+{% block title %}
+    User Login
+{% endblock %}
+
+{% block body_content %}
+     <h1>Login Form</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Login</button>
+    </form>
+
+    {% if messages %}
+        {% for message in messages %}
+            {% if forloop.last %}
+                <h3>{{ message }}</h3>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endblock %}
